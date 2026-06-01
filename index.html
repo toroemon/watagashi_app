@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>綿菓子注文キュー</title>
+  <title>綿菓子注文</title>
   <style>
     :root {
       --bg: #fff8fb; --panel: #ffffff; --ink: #2f2430; --muted: #766b76;
@@ -91,7 +91,7 @@
       overflow: hidden;
     }
     .left-col { grid-template-rows: auto 1fr auto; }
-    .center-col { grid-template-rows: auto minmax(0, 1fr); }
+    .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
     .right-col { grid-template-rows: auto auto 1fr; }
 
     .panel {
@@ -183,6 +183,21 @@
     #cartSummary { flex: 0 0 auto; }
     .cart-actions { flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 5px; margin-top: 5px; }
 
+    .wait-panel {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .wait-panel h2 { margin-bottom: 0; }
+    .wait-count {
+      font-size: clamp(20px, 2.5vw, 34px);
+      font-weight: 1000;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
     #nextBox {
       flex: 0 0 auto;
       min-height: 0;
@@ -227,7 +242,7 @@
     }
     .queue-list {
       flex: 1 1 auto;
-      min-height: 100;
+      min-height: 0;
       gap: 2px;
       overflow: auto;
     }
@@ -311,17 +326,48 @@
     }
 
     @media (max-width: 680px) {
-      html, body { overflow: auto; }
-      body { height: auto; min-height: 100svh; }
-      main { height: auto; overflow: visible; }
-      .order-view, .admin-view { grid-template-columns: 1fr; grid-template-rows: none; }
+      :root { --radius: 10px; --shadow: 0 4px 12px rgba(80, 40, 70, 0.1); }
+      html, body { height: 100%; overflow: hidden; }
+      body { height: 100svh; min-height: 0; }
+      header { gap: 4px; padding: 5px 6px; }
+      h1 { font-size: 15px; }
+      h2 { font-size: 12px; margin-bottom: 3px; }
+      button { border-radius: 9px; padding: 5px 6px; font-size: 11px; }
+      .tabbar { gap: 4px; padding: 4px 6px; }
+      main { height: auto; padding: 4px; gap: 4px; overflow: hidden; }
+      .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
+      .admin-view { grid-template-columns: 1fr; grid-template-rows: none; }
       .left-col { grid-row: auto; }
-      .col { overflow: visible; }
-      .panel { overflow: visible; }
-      .list { max-height: 35svh; }
-      .grid-2 { grid-template-columns: 1fr 1fr; }
-      .flavor-btn { min-height: 78px; font-size: 26px; }
+      .col { gap: 4px; overflow: hidden; }
+      .left-col { grid-template-rows: auto minmax(0, 1fr) auto; }
+      .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
+      .panel { padding: 5px; overflow: hidden; }
+      .wait-panel { gap: 4px; }
+      .wait-count { font-size: 15px; }
+      .subtle { font-size: 10px; margin-bottom: 3px; }
+      .tiny { font-size: 9px; }
+      .grid-2 { grid-template-columns: 1fr 1fr; gap: 4px; }
+      .flavor-btn { min-height: clamp(42px, 10svh, 58px); font-size: 17px; }
+      .flavor-btn small { font-size: 9px; margin-top: 3px; }
+      .cart-list, .list { gap: 3px; }
+      .cart-row { grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 2px; padding: 2px; }
+      .cart-row .danger { grid-column: 1 / -1; }
+      .cart-name, .cart-qty { font-size: 12px; }
+      .cart-qty { min-width: 20px; }
+      .mini { padding: 3px 5px; border-radius: 7px; font-size: 10px; }
+      .cart-total { padding: 4px; margin-top: 3px; font-size: 11px; }
+      .cart-total strong { font-size: 14px; }
+      .cart-actions { gap: 3px; margin-top: 3px; }
+      .next-card { height: clamp(170px, 34svh, 220px); padding: 5px; border-radius: 10px; }
+      .next-title { font-size: 24px; margin-bottom: 2px; }
+      .next-item { gap: 4px; padding: 3px 4px; border-radius: 7px; font-size: 14px; }
       .order { grid-template-columns: auto 1fr; }
+      .order-no { min-width: 34px; height: 26px; font-size: 12px; }
+      .order-title { font-size: 13px; }
+      .order-items { font-size: 10px; }
+      .queue-wait { font-size: 11px; }
+      table { font-size: 10px; margin-top: 3px; }
+      th, td { padding: 2px 1px; }
     }
   </style>
 </head>
@@ -363,13 +409,18 @@
     </section>
 
     <section class="col center-col">
+      <div class="panel wait-panel">
+        <h2>待ち</h2>
+        <div class="wait-count" id="queueWait"></div>
+      </div>
+
       <div class="panel">
-        <h2>製作キュー</h2>
+        <h2>つくる</h2>
         <div id="nextBox"></div>
       </div>
 
       <div class="panel queue-panel">
-        <h2 class="queue-heading">次以降の注文 <span class="queue-wait" id="queueWait"></span></h2>
+        <h2 class="queue-heading">次以降の注文</h2>
         <div class="list queue-list" id="queueBox"></div>
       </div>
     </section>
@@ -502,8 +553,8 @@
       const pending = state.orders.filter(o => o.s === "pending");
       const next = pending[0];
       const waiting = pending.slice(1);
-      const waitingQty = waiting.reduce((a, o) => a + itemsQty(o.items), 0);
-      document.getElementById("queueWait").textContent = `待ち：${waiting.length}組 / ${waitingQty}個`;
+      const pendingQty = pending.reduce((a, o) => a + itemsQty(o.items), 0);
+      document.getElementById("queueWait").textContent = `${pending.length}組 / ${pendingQty}個`;
 
       const stats = FLAVORS.map(f => {
         const active = state.orders.filter(o => o.s !== "canceled");
@@ -516,20 +567,16 @@
 
       document.getElementById("nextBox").innerHTML = next ? `
         <div class="next-card">
-          <div class="subtle">次につくるグループ / No.${shortId(next.id)}</div>
           <div class="next-title">G${next.groupId}</div>
           <div class="next-items">
             ${next.items.map(i => `<div class="next-item"><span>${i.n}</span><span>${i.q}個</span></div>`).join("")}
           </div>
-          <div class="subtle">受付 ${timeFmt(next.createdAt)} / キュー残り ${pending.length}件</div>
           <button class="ok" style="width:100%; padding:10px; font-size:16px;" data-act="finish" data-id="${next.id}">このグループを作った！</button>
         </div>
       ` : `
         <div class="next-card">
-          <div class="subtle">待機なし</div>
-          <div class="next-title">OK</div>
+          <div class="next-title">待ちなし</div>
           <div class="next-items"></div>
-          <div class="subtle">キュー残り 0件</div>
           <button class="ok" style="width:100%; padding:10px; font-size:16px;" disabled>このグループを作った！</button>
         </div>
       `;
@@ -543,7 +590,7 @@
           </div>
         </div>`;
 
-      document.getElementById("queueBox").innerHTML = waiting.map(o => rowHTML(o)).join("") || `<div class="subtle">次以降の注文はありません。</div>`;
+      document.getElementById("queueBox").innerHTML = waiting.map(o => rowHTML(o)).join("");
 
       document.getElementById("priceInput").value = state.price;
       document.getElementById("summaryTable").innerHTML = `
