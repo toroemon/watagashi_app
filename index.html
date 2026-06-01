@@ -452,7 +452,7 @@
       { k: "grape", n: "グレープ", c: "grape" },
       { k: "mango", n: "マンゴー", c: "mango" }
     ];
-    const DEFAULT_STATE = { qty: 1, price: 300, nextGroupId: 1, cart: [], orders: [] };
+    const DEFAULT_STATE = { qty: 1, price: 100, nextGroupId: 1, cart: [], orders: [] };
 
     const clone = obj => JSON.parse(JSON.stringify(obj));
     const loadState = () => {
@@ -468,7 +468,7 @@
 
     const normalizeState = () => {
       state.qty = 1;
-      state.price = Number(state.price) || 300;
+      state.price = Number(state.price) || 100;
       state.nextGroupId = Number(state.nextGroupId) || 1;
       if (!Array.isArray(state.cart)) state.cart = [];
       if (!Array.isArray(state.orders)) state.orders = [];
