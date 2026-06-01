@@ -371,10 +371,13 @@
       th, td { padding: 2px 1px; }
     }
 
-    @media (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
+    @media (orientation: landscape) and (max-height: 620px) and (max-width: 1100px) and (hover: none) and (pointer: coarse) {
       :root { --radius: 9px; --shadow: 0 3px 10px rgba(80, 40, 70, 0.1); }
       html, body { height: 100%; overflow: hidden; }
       body { height: 100svh; min-height: 0; }
+      @supports (height: 100dvh) {
+        body { height: 100dvh; }
+      }
       header { gap: 3px; min-height: 0; padding: 1px 5px; }
       h1 { font-size: 12px; line-height: 1; }
       h2 { font-size: 10px; line-height: 1; margin-bottom: 1px; }
@@ -420,7 +423,7 @@
 </head>
 <body>
   <header>
-    <h1>🍭 綿菓子注文キュー</h1>
+    <h1>🍭 綿菓子注文キューV29</h1>
     <div class="flex">
       <button class="ghost" data-act="undo">↶ 戻す</button>
       <button class="ghost" data-act="redo">↷ やり直す</button>
