@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>綿菓子注文キュー</title>
+  <style>
+    :root {
+      --bg: #fff8fb; --panel: #ffffff; --ink: #2f2430; --muted: #766b76;
+      --line: #eadfea; --accent: #ff77aa; --accent2: #7c6cff;
+      --danger: #d93f3f; --ok: #0f8a5f; --warn: #d78300;
+      --shadow: 0 8px 22px rgba(80, 40, 70, 0.12); --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      margin: 0;
+      height: 100svh;
+      display: flex;
+      flex-direction: column;
+      font-family: system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #ffe2ef, transparent 30rem), var(--bg);
+      color: var(--ink);
+    }
+
+    header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 248, 251, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .tabbar {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 6px;
+      padding: 6px 10px;
+      background: rgba(255, 248, 251, 0.94);
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1, h2 { margin: 0; }
+    h1 { font-size: clamp(18px, 2.1vw, 26px); line-height: 1; }
+    h2 { font-size: clamp(15px, 1.55vw, 20px); line-height: 1.1; margin-bottom: 5px; }
+    .queue-heading { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .queue-wait { color: var(--muted); font-size: clamp(15px, 1.5vw, 22px); font-weight: 900; white-space: nowrap; }
+    [hidden] { display: none !important; }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: clamp(13px, 1.25vw, 15px);
+      font-weight: 900;
+      cursor: pointer;
+      color: var(--ink);
+      background: #f2eaf2;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05);
+      user-select: none;
+      white-space: nowrap;
+    }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+    .tab-btn.active { color: white; background: var(--accent2); }
+
+    main {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .order-view { grid-template-columns: 0.95fr 1.35fr; }
+    .admin-view {
+      grid-template-columns: minmax(320px, 720px);
+      align-content: start;
+      justify-content: center;
+    }
+
+    .col {
+      min-height: 0;
+      display: grid;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .left-col { grid-template-rows: auto 1fr auto; }
+    .center-col { grid-template-rows: auto minmax(0, 1fr); }
+    .right-col { grid-template-rows: auto auto 1fr; }
+
+    .panel {
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 8px;
+    }
+
+    .subtle { color: var(--muted); font-size: 12px; line-height: 1.2; margin: 0 0 5px; }
+    .tiny { color: var(--muted); font-size: 11px; line-height: 1.15; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .flex { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    .qty-btn.active { color: white; background: var(--accent2); }
+    .flavor-btn {
+      min-height: clamp(56px, 9.5svh, 86px);
+      color: white;
+      font-size: clamp(20px, 2.6vw, 32px);
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: var(--shadow);
+    }
+    .flavor-btn small { display: block; font-size: 11px; margin-top: 6px; opacity: 0.92; }
+    .white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; text-shadow: none; }
+    .strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); }
+    .grape { background: linear-gradient(135deg, #7854d8, #b190ff); }
+    .mango { background: linear-gradient(135deg, #ffad1f, #ffdb67); color: #493012; text-shadow: none; }
+
+    .list {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .cart-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      overflow: auto;
+      padding-right: 0;
+    }
+    .cart-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+      gap: 3px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 3px;
+      background: #fff;
+    }
+    .cart-name {
+      font-size: clamp(14px, 1.45vw, 18px);
+      font-weight: 1000;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cart-qty { min-width: 26px; text-align: center; font-size: clamp(14px, 1.45vw, 18px); font-weight: 1000; }
+    .mini { padding: 4px 6px; border-radius: 9px; font-size: 12px; }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      border-radius: 12px;
+      background: #fbf7fb;
+      border: 1px solid var(--line);
+      padding: 5px;
+      margin-top: 4px;
+      font-weight: 1000;
+      font-size: 13px;
+    }
+    .cart-total strong { font-size: clamp(16px, 1.8vw, 22px); }
+    #cartSummary { flex: 0 0 auto; }
+    .cart-actions { flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 5px; margin-top: 5px; }
+
+    #nextBox {
+      flex: 0 0 auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .next-card {
+      border-radius: 16px;
+      padding: 7px;
+      background: linear-gradient(135deg, #fff2f7, #f1eeff);
+      border: 2px solid var(--accent);
+      box-shadow: var(--shadow);
+      height: clamp(250px, 34svh, 380px);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+    }
+    .next-title { font-size: clamp(24px, 3.4vw, 40px); font-weight: 1000; line-height: 0.9; margin: 1px 0 4px; }
+    .next-items { flex: 1 1 auto; min-height: 0; display: grid; align-content: start; gap: 3px; margin: 4px 0; overflow: auto; }
+    .next-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.75);
+      font-size: clamp(18px, 2.2vw, 28px);
+      line-height: 1.08;
+      font-weight: 1000;
+    }
+    .next-item span:first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .queue-panel {
+      min-height: 0;
+      height: 100%;
+    }
+    .queue-list {
+      flex: 1 1 auto;
+      min-height: 100;
+      gap: 2px;
+      overflow: auto;
+    }
+    .order {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 6px 8px;
+      background: #fff;
+    }
+    .order-no {
+      display: grid;
+      place-items: center;
+      min-width: 48px;
+      height: 34px;
+      border-radius: 6px;
+      background: #f6eff6;
+      font-size: clamp(15px, 1.35vw, 20px);
+      font-weight: 1000;
+    }
+    .order-info { min-width: 0; }
+    .order-title {
+      font-size: clamp(18px, 1.9vw, 26px);
+      line-height: 1.08;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 0;
+    }
+    .order-items { color: var(--muted); font-size: clamp(13px, 1.25vw, 18px); line-height: 1.1; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .stat-wrap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .stat { background: #fbf7fb; border: 1px solid var(--line); border-radius: 14px; padding: 7px; text-align: center; }
+    .stat .num { font-size: clamp(20px, 2.2vw, 30px); font-weight: 1000; line-height: 1; }
+
+    .ok { color: white; background: var(--ok); }
+    .ok:disabled { opacity: 0.38; cursor: not-allowed; }
+    .danger { color: white; background: var(--danger); }
+    .warn { color: white; background: var(--warn); }
+    .ghost { background: transparent; box-shadow: none; border: 1px solid var(--line); }
+
+    input[type="number"] {
+      width: 86px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+    th, td { padding: 5px 4px; border-bottom: 1px solid var(--line); text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    details { min-height: 0; }
+    summary { cursor: pointer; font-weight: 900; font-size: 16px; }
+
+    .toast {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      background: var(--ink);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-weight: bold;
+      transition: 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 980px) {
+      .order-view { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+      .left-col { grid-row: auto; }
+      .center-col { min-height: 0; }
+    }
+
+    @media (max-width: 680px) {
+      html, body { overflow: auto; }
+      body { height: auto; min-height: 100svh; }
+      main { height: auto; overflow: visible; }
+      .order-view, .admin-view { grid-template-columns: 1fr; grid-template-rows: none; }
+      .left-col { grid-row: auto; }
+      .col { overflow: visible; }
+      .panel { overflow: visible; }
+      .list { max-height: 35svh; }
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .flavor-btn { min-height: 78px; font-size: 26px; }
+      .order { grid-template-columns: auto 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍭 綿菓子注文キュー</h1>
+    <div class="flex">
+      <button class="ghost" data-act="undo">↶ 戻す</button>
+      <button class="ghost" data-act="redo">↷ やり直す</button>
+    </div>
+  </header>
+
+  <nav class="tabbar" aria-label="画面切り替え">
+    <button class="tab-btn active" data-act="tab" data-tab="order">注文</button>
+    <button class="tab-btn" data-act="tab" data-tab="admin">管理</button>
+  </nav>
+
+  <main id="orderTab" class="order-view">
+    <section class="col left-col">
+      <div class="panel">
+        <h2>注文入力</h2>
+        <div class="grid-2" id="flavorBox"></div>
+      </div>
+
+      <div class="panel">
+        <h2>現在のカゴ</h2>
+        <div class="cart-list" id="cartBox"></div>
+        <div id="cartSummary"></div>
+        <div class="cart-actions">
+          <button class="ok" data-act="confirmGroup">会計して確定</button>
+          <button class="ghost" data-act="clearCart">空</button>
+        </div>
+      </div>
+
+      <div class="panel summary-panel">
+        <h2>集計</h2>
+        <div id="summaryTable"></div>
+      </div>
+    </section>
+
+    <section class="col center-col">
+      <div class="panel">
+        <h2>製作キュー</h2>
+        <div id="nextBox"></div>
+      </div>
+
+      <div class="panel queue-panel">
+        <h2 class="queue-heading">次以降の注文 <span class="queue-wait" id="queueWait"></span></h2>
+        <div class="list queue-list" id="queueBox"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <main id="adminTab" class="admin-view" hidden>
+    <section class="col">
+      <div class="panel">
+        <h2>保存メニュー</h2>
+        <div class="flex" style="margin-top: 8px;">
+          <label>単価 <input type="number" id="priceInput" step="10" /> 円</label>
+          <button class="ghost" data-act="savePrice">保存</button>
+          <button class="ghost" data-act="csv">CSV</button>
+          <button class="ghost" data-act="json">バックアップ</button>
+          <button class="danger" data-act="reset">全消去</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const KEY = "cc_data_v4_cart_groups";
+    const FLAVORS = [
+      { k: "white", n: "ホワイト", c: "white" },
+      { k: "strawberry", n: "イチゴ", c: "strawberry" },
+      { k: "grape", n: "グレープ", c: "grape" },
+      { k: "mango", n: "マンゴー", c: "mango" }
+    ];
+    const DEFAULT_STATE = { qty: 1, price: 300, nextGroupId: 1, cart: [], orders: [] };
+
+    const clone = obj => JSON.parse(JSON.stringify(obj));
+    const loadState = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY)) || clone(DEFAULT_STATE);
+      } catch {
+        return clone(DEFAULT_STATE);
+      }
+    };
+
+    let state = loadState();
+    let history = { undo: [], redo: [] };
+
+    const normalizeState = () => {
+      state.qty = 1;
+      state.price = Number(state.price) || 300;
+      state.nextGroupId = Number(state.nextGroupId) || 1;
+      if (!Array.isArray(state.cart)) state.cart = [];
+      if (!Array.isArray(state.orders)) state.orders = [];
+
+      state.cart = state.cart
+        .map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 }))
+        .filter(i => i.k && i.n && i.q > 0);
+
+      state.orders = state.orders
+        .map(o => ({
+          id: o.id || Date.now(),
+          groupId: Number(o.groupId) || state.nextGroupId++,
+          items: Array.isArray(o.items) ? o.items.map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 })).filter(i => i.k && i.n && i.q > 0) : [],
+          s: o.s || "pending",
+          createdAt: o.createdAt || o.id || Date.now()
+        }))
+        .filter(o => o.items.length > 0);
+    };
+
+    const save = () => { localStorage.setItem(KEY, JSON.stringify(state)); render(); };
+    const snap = () => JSON.stringify(state);
+    const pushHist = () => { history.undo.push(snap()); history.redo = []; if (history.undo.length > 50) history.undo.shift(); };
+    const shortId = ts => String(ts).slice(-4);
+    const timeFmt = ts => new Date(Number(ts)).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    const yen = n => `${Number(n).toLocaleString()}円`;
+    const itemsQty = items => items.reduce((a, b) => a + b.q, 0);
+    const itemsText = items => items.map(i => `${i.n}${i.q}個`).join("・");
+
+    const showToast = msg => {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    };
+
+    const updateUndoRedoButtons = () => {
+      document.querySelector('[data-act="undo"]').disabled = history.undo.length === 0;
+      document.querySelector('[data-act="redo"]').disabled = history.redo.length === 0;
+    };
+
+    const setActiveTab = tab => {
+      document.getElementById("orderTab").hidden = tab !== "order";
+      document.getElementById("adminTab").hidden = tab !== "admin";
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+    };
+
+    const render = () => {
+      normalizeState();
+
+      state.qty = 1;
+
+      document.getElementById("flavorBox").innerHTML = FLAVORS.map(f =>
+        `<button class="flavor-btn ${f.c}" data-flavor="${f.k}">
+          ${f.n}<small>1個追加</small>
+        </button>`
+      ).join("");
+
+      const cartQty = itemsQty(state.cart);
+      const cartTotal = cartQty * state.price;
+
+      document.getElementById("cartBox").innerHTML = state.cart.map(i => `
+        <div class="cart-row">
+          <div class="cart-name">${i.n}</div>
+          <button class="mini ghost" data-act="cartMinus" data-k="${i.k}">−</button>
+          <div class="cart-qty">${i.q}</div>
+          <button class="mini ghost" data-act="cartPlus" data-k="${i.k}">＋</button>
+          <button class="mini danger" data-act="cartRemove" data-k="${i.k}">削除</button>
+        </div>
+      `).join("") || `<div class="subtle">カゴは空です。味ボタンで追加します。</div>`;
+
+      document.getElementById("cartSummary").innerHTML = `
+        <div class="cart-total">
+          <div>次 G${state.nextGroupId}<br><span class="tiny">${cartQty}個 × ${yen(state.price)}</span></div>
+          <strong>${yen(cartTotal)}</strong>
+        </div>`;
+
+      document.querySelector('[data-act="confirmGroup"]').disabled = state.cart.length === 0;
+      document.querySelector('[data-act="clearCart"]').disabled = state.cart.length === 0;
+
+      const pending = state.orders.filter(o => o.s === "pending");
+      const next = pending[0];
+      const waiting = pending.slice(1);
+      const waitingQty = waiting.reduce((a, o) => a + itemsQty(o.items), 0);
+      document.getElementById("queueWait").textContent = `待ち：${waiting.length}組 / ${waitingQty}個`;
+
+      const stats = FLAVORS.map(f => {
+        const active = state.orders.filter(o => o.s !== "canceled");
+        const sum = active.reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        const p = state.orders.filter(o => o.s === "pending").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        const d = state.orders.filter(o => o.s === "done").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        return { n: f.n, sum, p, d };
+      });
+      const total = stats.reduce((a, b) => a + b.sum, 0);
+
+      document.getElementById("nextBox").innerHTML = next ? `
+        <div class="next-card">
+          <div class="subtle">次につくるグループ / No.${shortId(next.id)}</div>
+          <div class="next-title">G${next.groupId}</div>
+          <div class="next-items">
+            ${next.items.map(i => `<div class="next-item"><span>${i.n}</span><span>${i.q}個</span></div>`).join("")}
+          </div>
+          <div class="subtle">受付 ${timeFmt(next.createdAt)} / キュー残り ${pending.length}件</div>
+          <button class="ok" style="width:100%; padding:10px; font-size:16px;" data-act="finish" data-id="${next.id}">このグループを作った！</button>
+        </div>
+      ` : `
+        <div class="next-card">
+          <div class="subtle">待機なし</div>
+          <div class="next-title">OK</div>
+          <div class="next-items"></div>
+          <div class="subtle">キュー残り 0件</div>
+          <button class="ok" style="width:100%; padding:10px; font-size:16px;" disabled>このグループを作った！</button>
+        </div>
+      `;
+
+      const rowHTML = o => `
+        <div class="order">
+          <div class="order-no">G${o.groupId}</div>
+          <div class="order-info">
+            <div class="order-title">${itemsText(o.items)}</div>
+            <div class="order-items">${itemsQty(o.items)}個 / ${timeFmt(o.createdAt)}</div>
+          </div>
+        </div>`;
+
+      document.getElementById("queueBox").innerHTML = waiting.map(o => rowHTML(o)).join("") || `<div class="subtle">次以降の注文はありません。</div>`;
+
+      document.getElementById("priceInput").value = state.price;
+      document.getElementById("summaryTable").innerHTML = `
+        <table>
+          <tr><th>味</th><th>販売</th><th>待ち</th><th>完了</th><th>売上</th></tr>
+          ${stats.map(s => `<tr><td>${s.n}</td><td>${s.sum}</td><td>${s.p}</td><td>${s.d}</td><td>${yen(s.sum * state.price)}</td></tr>`).join("")}
+          <tr><th>合計</th><th>${total}</th><th>${stats.reduce((a,b)=>a+b.p,0)}</th><th>${stats.reduce((a,b)=>a+b.d,0)}</th><th>${yen(total * state.price)}</th></tr>
+        </table>`;
+
+      updateUndoRedoButtons();
+    };
+
+    document.body.addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn || btn.disabled) return;
+
+      const { act, id, qty, flavor, k } = btn.dataset;
+
+      if (act === "tab") {
+        setActiveTab(btn.dataset.tab);
+      } else if (flavor) {
+        const f = FLAVORS.find(x => x.k === flavor);
+        if (!f) return;
+        pushHist();
+        const item = state.cart.find(i => i.k === f.k);
+        if (item) item.q += 1;
+        else state.cart.push({ k: f.k, n: f.n, q: 1 });
+        save();
+        showToast(`${f.n} 1個をカゴに追加！`);
+      } else if (act === "cartPlus" || act === "cartMinus" || act === "cartRemove") {
+        const item = state.cart.find(i => i.k === k);
+        if (!item) return;
+        pushHist();
+        if (act === "cartPlus") item.q += 1;
+        if (act === "cartMinus") item.q -= 1;
+        if (act === "cartRemove" || item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
+        save();
+      } else if (act === "clearCart") {
+        if (!state.cart.length) return;
+        pushHist();
+        state.cart = [];
+        save();
+        showToast("カゴを空にしました");
+      } else if (act === "confirmGroup") {
+        if (!state.cart.length) return;
+        pushHist();
+        const now = Date.now();
+        const groupId = state.nextGroupId;
+        state.orders.push({
+          id: now,
+          groupId,
+          items: state.cart.map(i => ({ ...i })),
+          s: "pending",
+          createdAt: now
+        });
+        state.nextGroupId += 1;
+        state.cart = [];
+        save();
+        showToast(`G${groupId} をキューに入れました！`);
+      } else if (act === "finish") {
+        const order = state.orders.find(o => String(o.id) === String(id));
+        if (!order) return;
+        pushHist();
+        order.s = "done";
+        save();
+        showToast(`G${order.groupId} を完了！`);
+      } else if (act === "undo" && history.undo.length) {
+        history.redo.push(snap());
+        state = JSON.parse(history.undo.pop());
+        normalizeState();
+        save();
+        showToast("戻しました！");
+      } else if (act === "redo" && history.redo.length) {
+        history.undo.push(snap());
+        state = JSON.parse(history.redo.pop());
+        normalizeState();
+        save();
+        showToast("やり直しました！");
+      } else if (act === "savePrice") {
+        const price = Number(document.getElementById("priceInput").value);
+        if (!Number.isFinite(price) || price < 0) return showToast("単価を確認してね");
+        pushHist();
+        state.price = price;
+        save();
+        showToast("単価を保存したよ！");
+      } else if (act === "reset" && confirm("全消去するよ？元には戻せないからね！")) {
+        pushHist();
+        state.cart = [];
+        state.orders = [];
+        state.nextGroupId = 1;
+        save();
+        showToast("全消去しました");
+      } else if (act === "csv") {
+        const rows = ["groupId,orderId,味,数量,状態,受付時刻,売上"];
+        state.orders.forEach(o => {
+          o.items.forEach(i => {
+            const sale = o.s === "canceled" ? 0 : i.q * state.price;
+            rows.push(`${o.groupId},${o.id},${i.n},${i.q},${o.s},${new Date(o.createdAt).toLocaleString("ja-JP")},${sale}`);
+          });
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([String.fromCharCode(0xfeff) + rows.join(String.fromCharCode(10))], { type: "text/csv" }));
+        a.download = `orders_${Date.now()}.csv`;
+        a.click();
+      } else if (act === "json") {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }));
+        a.download = `backup_${Date.now()}.json`;
+        a.click();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
