@@ -90,7 +90,7 @@
       gap: 8px;
       overflow: hidden;
     }
-    .left-col { grid-template-rows: auto minmax(0, 1fr); }
+    .left-col { grid-template-rows: minmax(0, 1fr); }
     .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
     .right-col { grid-template-rows: auto auto 1fr; }
 
@@ -137,35 +137,51 @@
       padding-right: 2px;
     }
 
-    .cart-list {
+    .order-cart-panel {
+      gap: 8px;
+    }
+    .cart-entry {
       flex: 1 1 auto;
       min-height: 0;
       display: grid;
-      align-content: start;
-      gap: 4px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+      overflow: hidden;
+    }
+    .flavor-stack,
+    .cart-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      display: grid;
+      grid-template-rows: repeat(4, minmax(0, 1fr));
+      gap: 8px;
       overflow: auto;
       padding-right: 0;
     }
     .cart-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto auto auto;
-      gap: 3px;
+      grid-template-columns: 1fr;
+      min-width: 0;
+      gap: 10px;
       align-items: center;
+      justify-items: center;
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 3px;
+      padding: 8px;
       background: #fff;
     }
-    .cart-name {
-      font-size: clamp(14px, 1.45vw, 18px);
-      font-weight: 1000;
+    .cart-count {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      max-width: 100%;
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
-    .cart-qty { min-width: 26px; text-align: center; font-size: clamp(14px, 1.45vw, 18px); font-weight: 1000; }
-    .mini { padding: 4px 6px; border-radius: 9px; font-size: 12px; }
+    .cart-qty { min-width: 1.15em; text-align: center; font-size: clamp(34px, 4.2vw, 58px); line-height: 1; font-weight: 1000; }
+    .mini { min-width: 48px; min-height: 48px; padding: 4px 8px; border-radius: 12px; font-size: 32px; line-height: 1; }
     .cart-total {
       display: flex;
       justify-content: space-between;
@@ -181,7 +197,7 @@
     }
     .cart-total strong { font-size: clamp(16px, 1.8vw, 22px); }
     #cartSummary { flex: 0 0 auto; }
-    .cart-actions { flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 5px; margin-top: 5px; }
+    .cart-actions { flex: 0 0 auto; display: grid; grid-template-columns: 1fr; gap: 5px; margin-top: 5px; }
 
     .wait-panel {
       flex: 0 0 auto;
@@ -216,8 +232,19 @@
       flex-direction: column;
       overflow: visible;
     }
+    .next-card[data-act="finish"] { cursor: pointer; }
     .next-title { font-size: clamp(24px, 3.4vw, 40px); font-weight: 1000; line-height: 0.9; margin: 1px 0 4px; }
-    .next-items { flex: 1 1 auto; min-height: 0; display: grid; align-content: start; gap: 3px; margin: 4px 0; overflow: auto; }
+    .next-items {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: minmax(56px, max-content);
+      align-content: start;
+      gap: 5px;
+      margin: 4px 0;
+      overflow: auto;
+    }
     .next-item {
       display: flex;
       justify-content: space-between;
@@ -229,6 +256,10 @@
       line-height: 1.08;
       font-weight: 1000;
     }
+    .next-item.white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; }
+    .next-item.strawberry { background: linear-gradient(135deg, #ffd9e8, #ff8fbd); color: #641437; }
+    .next-item.grape { background: linear-gradient(135deg, #e6dcff, #a68cff); color: #332064; }
+    .next-item.mango { background: linear-gradient(135deg, #ffe7a1, #ffbd42); color: #493012; }
     .next-item span:first-child {
       min-width: 0;
       overflow: hidden;
@@ -342,7 +373,7 @@
       .admin-view { grid-template-columns: 1fr; grid-template-rows: none; }
       .left-col { grid-row: auto; }
       .col { gap: 4px; overflow: hidden; }
-      .left-col { grid-template-rows: auto minmax(0, 1fr); }
+      .left-col { grid-template-rows: minmax(0, 1fr); }
       .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
       .panel { padding: 5px; overflow: hidden; }
       .wait-panel { gap: 4px; }
@@ -352,17 +383,17 @@
       .grid-2 { grid-template-columns: 1fr 1fr; gap: 4px; }
       .flavor-btn { min-height: clamp(56px, 12svh, 78px); font-size: 16px; }
       .flavor-btn small { font-size: 10px; margin-top: 4px; }
-      .cart-list, .list { gap: 3px; }
-      .cart-row { grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; padding: 0px; }
-      .cart-row .danger { grid-column: 1 / -1; }
-      .cart-name, .cart-qty { font-size: 18px; }
-      .cart-qty { min-width: 0px; }
-      .mini { min-height: px; padding: 0px 0px; border-radius: 12px; font-size: 20px; }
+      .cart-entry { gap: 2px; }
+      .flavor-stack, .cart-list, .list { gap: 3px; }
+      .cart-row { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 2px; }
+      .cart-qty { min-width: 1em; font-size: 28px; }
+      .cart-count { gap: 2px; }
+      .mini { min-width: 30px; min-height: 34px; padding: 0px 4px; border-radius: 9px; font-size: 24px; }
       .cart-total { padding: 4px; margin-top: 3px; font-size: 12px; }
       .cart-total strong { font-size: 16px; }
       .cart-actions { gap: 3px; margin-top: 3px; }
       .cart-actions button { min-height: 20px; padding: 20px 5px; font-size: 22px; }
-      .next-card { height: clamp(170px, 34svh, 220px); padding: 5px; border-radius: 10px; }
+      .next-card { height: clamp(187px, 37.4svh, 242px); padding: 5px; border-radius: 10px; }
       .next-card > button.ok { min-height: 22px; padding: 18px 5px !important; font-size: 16px !important; }
       .next-title { font-size: 24px; margin-bottom: 2px; }
       .next-item { gap: 4px; padding: 3px 4px; border-radius: 7px; font-size: 14px; }
@@ -373,6 +404,45 @@
       .queue-wait { font-size: 11px; }
       table { font-size: 10px; margin-top: 3px; }
       th, td { padding: 2px 1px; }
+    }
+
+    @media (max-width: 680px) and (orientation: portrait) {
+      :root { --radius: 9px; }
+      header { gap: 4px; padding: 4px 5px; }
+      h1 { font-size: 14px; }
+      h2 { font-size: 11px; margin-bottom: 2px; }
+      button { min-height: 29px; padding: 6px 7px; font-size: 12px; border-radius: 9px; }
+      .tabbar { gap: 4px; padding: 4px 5px; }
+      main { padding: 4px; gap: 4px; }
+      .col { gap: 4px; }
+      .panel { padding: 4px; }
+      .wait-panel { gap: 4px; }
+      .wait-count { font-size: 14px; }
+      .subtle { font-size: 9px; margin-bottom: 2px; }
+      .tiny { font-size: 8px; }
+      .grid-2 { gap: 4px; }
+      .flavor-btn { min-height: clamp(50px, 10.8svh, 70px); font-size: 14px; }
+      .flavor-btn small { font-size: 9px; margin-top: 4px; }
+      .flavor-stack,
+      .cart-list,
+      .list { gap: 3px; }
+      .cart-row { gap: 2px; padding: 2px; border-radius: 9px; }
+      .cart-qty { font-size: 25px; }
+      .mini { min-width: 27px; min-height: 31px; padding: 0 4px; border-radius: 8px; font-size: 22px; }
+      .cart-total { padding: 4px; margin-top: 3px; font-size: 11px; }
+      .cart-total strong { font-size: 14px; }
+      .cart-actions { gap: 3px; margin-top: 3px; }
+      .cart-actions button { min-height: 18px; padding: 18px 5px; font-size: 20px; }
+      .next-card { height: clamp(168px, 33.7svh, 218px); padding: 5px; border-radius: 9px; }
+      .next-card > button.ok { min-height: 20px; padding: 16px 5px !important; font-size: 14px !important; }
+      .next-title { font-size: 22px; }
+      .next-item { gap: 4px; padding: 3px 4px; border-radius: 6px; font-size: 13px; }
+      .order { gap: 7px; padding: 5px 7px; }
+      .order-no { min-width: 31px; height: 23px; font-size: 11px; }
+      .order-title { font-size: 12px; }
+      .order-items { font-size: 9px; }
+      .queue-wait { font-size: 10px; }
+      table { font-size: 9px; }
     }
 
     @media (orientation: landscape) and (max-height: 620px) and (hover: none) and (pointer: coarse) {
@@ -390,7 +460,7 @@
       main { padding: 2px 4px; gap: 3px; overflow: hidden; }
       .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
       .col { gap: 3px; overflow: hidden; }
-      .left-col { grid-template-rows: auto minmax(0, 1fr); }
+      .left-col { grid-template-rows: minmax(0, 1fr); }
       .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
       .panel { padding: 3px; overflow: hidden; }
       .wait-panel { gap: 3px; }
@@ -400,19 +470,19 @@
       .grid-2 { gap: 3px; }
       .flavor-btn { min-height: clamp(32px, 11svh, 44px); font-size: 15px; }
       .flavor-btn small { font-size: 8px; margin-top: 2px; }
-      .cart-list, .list { gap: 1px; }
-      .cart-row { grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 1px; padding: 1px; border-radius: 5px; line-height: 1; }
-      .cart-row .danger { grid-column: auto; }
-      .cart-name, .cart-qty { font-size: 9px; }
-      .cart-qty { min-width: 14px; }
-      .mini { min-height: 17px; padding: 1px 3px; border-radius: 5px; font-size: 9px; line-height: 1; }
+      .cart-entry { gap: 2px; }
+      .flavor-stack, .cart-list, .list { gap: 1px; }
+      .cart-row { grid-template-columns: 1fr; gap: 2px; padding: 2px; border-radius: 5px; line-height: 1; }
+      .cart-qty { min-width: 1em; font-size: 18px; }
+      .cart-count { gap: 2px; }
+      .mini { min-width: 22px; min-height: 24px; padding: 1px 3px; border-radius: 6px; font-size: 16px; line-height: 1; }
       .cart-total { padding: 1px 2px; margin-top: 1px; font-size: 8px; line-height: 1.05; }
       .cart-total strong { font-size: 10px; }
       .cart-actions { gap: 2px; margin-top: 1px; }
       .cart-actions button { min-height: 20px; padding: 2px 5px; font-size: 22px; }
-      .next-card { height: clamp(126px, 36svh, 156px); padding: 3px; border-radius: 8px; overflow: hidden; }
+      .next-card { height: clamp(139px, 39.6svh, 172px); padding: 3px; border-radius: 8px; overflow: hidden; }
       .next-title { font-size: 18px; margin-bottom: 0; }
-      .next-items { gap: 1px; margin: 1px 0; }
+      .next-items { gap: 2px; margin: 1px 0; }
       .next-item { gap: 3px; padding: 2px 3px; border-radius: 5px; font-size: 12px; line-height: 1; }
       .next-card > button.ok { min-height: 22px; padding: 10px 5px !important; font-size: 22px !important; }
       .order { gap: 3px; padding: 2px 3px; grid-template-columns: auto minmax(0, 1fr); }
@@ -426,7 +496,7 @@
 </head>
 <body>
   <header>
-    <h1>🍭 綿菓子注文アプリ</h1>
+    <h1>🍭 綿菓子注文アプリ_0603</h1>
     <div class="flex">
       <button class="ghost" data-act="undo">↶ 戻す</button>
       <button class="ghost" data-act="redo">↷ やり直す</button>
@@ -440,18 +510,15 @@
 
   <main id="orderTab" class="order-view">
     <section class="col left-col">
-      <div class="panel">
+      <div class="panel order-cart-panel">
         <h2>注文入力</h2>
-        <div class="grid-2" id="flavorBox"></div>
-      </div>
-
-      <div class="panel">
-        <h2>現在のカゴ</h2>
-        <div class="cart-list" id="cartBox"></div>
+        <div class="cart-entry">
+          <div class="flavor-stack" id="flavorBox"></div>
+          <div class="cart-list" id="cartBox"></div>
+        </div>
         <div id="cartSummary"></div>
         <div class="cart-actions">
           <button class="ok" data-act="confirmGroup">会計して確定</button>
-          <button class="ghost" data-act="clearCart">空</button>
         </div>
       </div>
     </section>
@@ -583,15 +650,18 @@
       const cartQty = itemsQty(state.cart);
       const cartTotal = cartQty * state.price;
 
-      document.getElementById("cartBox").innerHTML = state.cart.map(i => `
+      document.getElementById("cartBox").innerHTML = FLAVORS.map(f => {
+        const item = state.cart.find(i => i.k === f.k);
+        const q = item ? item.q : 0;
+        return `
         <div class="cart-row">
-          <div class="cart-name">${i.n}</div>
-          <button class="mini ghost" data-act="cartMinus" data-k="${i.k}">−</button>
-          <div class="cart-qty">${i.q}</div>
-          <button class="mini ghost" data-act="cartPlus" data-k="${i.k}">＋</button>
-          <button class="mini danger" data-act="cartRemove" data-k="${i.k}">削除</button>
+          <div class="cart-count">
+            <div class="cart-qty">${q}</div>
+            <button class="mini ghost" data-act="cartMinus" data-k="${f.k}" ${q === 0 ? "disabled" : ""}>-</button>
+          </div>
         </div>
-      `).join("") || `<div class="subtle">カゴは空です。味ボタンで追加します。</div>`;
+      `;
+      }).join("");
 
       document.getElementById("cartSummary").innerHTML = `
         <div class="cart-total">
@@ -600,7 +670,6 @@
         </div>`;
 
       document.querySelector('[data-act="confirmGroup"]').disabled = state.cart.length === 0;
-      document.querySelector('[data-act="clearCart"]').disabled = state.cart.length === 0;
 
       const pending = state.orders.filter(o => o.s === "pending");
       const next = pending[0];
@@ -618,10 +687,10 @@
       const total = stats.reduce((a, b) => a + b.sum, 0);
 
       document.getElementById("nextBox").innerHTML = next ? `
-        <div class="next-card">
+        <div class="next-card" data-act="finish" data-id="${next.id}">
           <div class="next-title">G${next.groupId}</div>
           <div class="next-items">
-            ${next.items.map(i => `<div class="next-item"><span>${i.n}</span><span>${i.q}個</span></div>`).join("")}
+            ${next.items.map(i => `<div class="next-item ${i.k}"><span>${i.n}</span><span>${i.q}個</span></div>`).join("")}
           </div>
           <button class="ok" style="width:100%; padding:10px; font-size:16px;" data-act="finish" data-id="${next.id}">このグループを作った！</button>
         </div>
@@ -657,7 +726,7 @@
     };
 
     document.body.addEventListener("click", e => {
-      const btn = e.target.closest("button");
+      const btn = e.target.closest('button, .next-card[data-act="finish"]');
       if (!btn || btn.disabled) return;
 
       const { act, id, qty, flavor, k } = btn.dataset;
@@ -673,20 +742,13 @@
         else state.cart.push({ k: f.k, n: f.n, q: 1 });
         save();
         showToast(`${f.n} 1個をカゴに追加！`);
-      } else if (act === "cartPlus" || act === "cartMinus" || act === "cartRemove") {
+      } else if (act === "cartMinus") {
         const item = state.cart.find(i => i.k === k);
         if (!item) return;
         pushHist();
-        if (act === "cartPlus") item.q += 1;
-        if (act === "cartMinus") item.q -= 1;
-        if (act === "cartRemove" || item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
+        item.q -= 1;
+        if (item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
         save();
-      } else if (act === "clearCart") {
-        if (!state.cart.length) return;
-        pushHist();
-        state.cart = [];
-        save();
-        showToast("カゴを空にしました");
       } else if (act === "confirmGroup") {
         if (!state.cart.length) return;
         pushHist();
