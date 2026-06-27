@@ -1,0 +1,1663 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>綿菓子注文</title>
+  <style>
+    :root {
+      --bg: #fff8fb; --panel: #ffffff; --ink: #2f2430; --muted: #766b76;
+      --line: #eadfea; --accent: #ff77aa; --accent2: #7c6cff;
+      --danger: #d93f3f; --ok: #0f8a5f; --warn: #d78300;
+      --shadow: 0 8px 22px rgba(80, 40, 70, 0.12); --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      margin: 0;
+      height: 100svh;
+      display: flex;
+      flex-direction: column;
+      font-family: system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #ffe2ef, transparent 30rem), var(--bg);
+      color: var(--ink);
+    }
+
+    header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 248, 251, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .tabbar {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 6px;
+      padding: 6px 10px;
+      background: rgba(255, 248, 251, 0.94);
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1, h2 { margin: 0; }
+    h1 { font-size: clamp(18px, 2.1vw, 26px); line-height: 1; }
+    h2 { font-size: clamp(15px, 1.55vw, 20px); line-height: 1.1; margin-bottom: 5px; }
+    .queue-heading { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .queue-wait { color: var(--muted); font-size: clamp(15px, 1.5vw, 22px); font-weight: 900; white-space: nowrap; }
+    [hidden] { display: none !important; }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: clamp(13px, 1.25vw, 15px);
+      font-weight: 900;
+      cursor: pointer;
+      color: var(--ink);
+      background: #f2eaf2;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05);
+      user-select: none;
+      white-space: nowrap;
+    }
+    button.press-animate {
+      animation: button-press 150ms ease-out;
+    }
+    @keyframes button-press {
+      0% { transform: scale(1); }
+      70% {
+        transform: scale(0.96);
+        box-shadow: inset 0 3px 7px rgba(47,36,48,0.28), 0 1px 2px rgba(47,36,48,0.12);
+        /* filter: brightness(1); */
+      }
+      100% { transform: scale(1); }
+    }
+    .flavor-afterimage {
+      position: fixed;
+      z-index: 200;
+      margin: 0;
+      pointer-events: none;
+      animation: flavor-afterimage-rise 700ms cubic-bezier(0.2, 0.7, 0.25, 1) forwards;
+      will-change: transform, opacity, filter;
+    }
+    @keyframes flavor-afterimage-rise {
+      0% { transform: translateY(0) scale(1); opacity: 0.72; filter: blur(0); }
+      55% { opacity: 0.36; }
+      100% { transform: translateY(-90px) scale(1.04); opacity: 0; filter: blur(5px); }
+    }
+    button:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+    .tab-btn.active { color: white; background: var(--accent2); }
+    .admin-tab-btn {
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 20px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    main {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .order-view { grid-template-columns: 0.95fr 1.35fr; }
+    .admin-view {
+      grid-template-columns: minmax(320px, 720px);
+      align-content: start;
+      justify-content: center;
+    }
+    .line-view {
+      grid-template-columns: minmax(320px, 720px);
+      align-content: start;
+      justify-content: center;
+    }
+    #lineTab {
+      --panel: #111827;
+      --ink: #f8fafc;
+      --muted: #aab6c7;
+      --line: #334155;
+      --accent2: #93c5fd;
+      --danger: #f87171;
+      --ok: #16a34a;
+      background: radial-gradient(circle at top, rgba(59,130,246,0.22), transparent 28rem), #070b14;
+      color: var(--ink);
+    }
+    .line-panel {
+      display: grid;
+      gap: 18px;
+      text-align: center;
+      padding: clamp(18px, 4vw, 34px);
+    }
+    #lineTab .panel,
+    #lineTab .line-wait {
+      background: rgba(17, 24, 39, 0.96);
+      border-color: var(--line);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+    }
+    #lineTab .line-wait {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .line-label {
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 28px);
+      font-weight: 900;
+    }
+    .line-wait {
+      display: grid;
+      gap: 6px;
+      text-align: center;
+      padding: clamp(12px, 3vw, 24px) 4px 2px;
+    }
+    .line-wait-label {
+      color: var(--muted);
+      font-size: clamp(16px, 1.8vw, 24px);
+      font-weight: 900;
+    }
+    .line-wait-minutes {
+      font-size: clamp(84px, 16vw, 192px);
+      line-height: 1;
+      font-weight: 1000;
+      color: var(--accent2);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 28px rgba(147, 197, 253, 0.28);
+    }
+    .line-wait-minutes.wait-blue { color: #60a5fa; }
+    .line-wait-minutes.wait-yellow { color: #facc15; }
+    .line-wait-minutes.wait-orange { color: #fb923c; }
+    .line-wait-minutes.wait-red { color: var(--danger); }
+    .line-wait-detail {
+      color: var(--muted);
+      font-size: clamp(13px, 1.35vw, 18px);
+      font-weight: 800;
+    }
+    .line-count {
+      font-size: clamp(76px, 16vw, 180px);
+      line-height: 0.9;
+      font-weight: 1000;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .line-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .line-actions button {
+      min-height: clamp(78px, 12vw, 130px);
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: 1;
+    }
+    #lineTab .line-actions .ghost {
+      color: var(--ink);
+      background: #1f2937;
+      border-color: #475569;
+    }
+    #lineTab .line-actions .ok {
+      background: #16a34a;
+      box-shadow: 0 10px 24px rgba(22, 163, 74, 0.24), inset 0 -2px 0 rgba(0,0,0,0.18);
+    }
+
+    .col {
+      min-height: 0;
+      display: grid;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .left-col { grid-template-rows: minmax(0, 1fr); }
+    .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
+    .right-col { grid-template-rows: auto auto 1fr; }
+
+    .panel {
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 8px;
+    }
+
+    .subtle { color: var(--muted); font-size: 12px; line-height: 1.2; margin: 0 0 5px; }
+    .tiny { color: var(--muted); font-size: 11px; line-height: 1.15; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .flex { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .admin-settings {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: start;
+    }
+    .admin-settings label {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .qty-btn.active { color: white; background: var(--accent2); }
+    .flavor-btn {
+      min-height: clamp(56px, 9.5svh, 86px);
+      color: white;
+      font-size: clamp(20px, 2.6vw, 32px);
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: var(--shadow);
+    }
+    .flavor-btn .flavor-name { display: block; }
+    .flavor-btn .flavor-name.two-line { line-height: 0.9; }
+    .flavor-btn.bluehawaii { padding-block: 3px; }
+    .flavor-btn.bluehawaii small { margin-top: 2px; }
+    .flavor-btn small { display: block; font-size: 11px; margin-top: 6px; opacity: 0.92; }
+    .white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; text-shadow: none; }
+    .strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); color: #181018; text-shadow: none; }
+    .bluehawaii { background: linear-gradient(135deg, #1397ff, #72d6ff); color: #101828; text-shadow: none; }
+    .melon { background: linear-gradient(135deg, #36c46f, #a7ee7b); color: #17391f; text-shadow: none; }
+    .lemon { background: linear-gradient(135deg, #ffe54a, #fff8a6); color: #4a3b00; text-shadow: none; }
+
+    .list {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .order-cart-panel {
+      gap: 8px;
+    }
+    .cart-entry {
+      flex: 4 1 0;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+      overflow: hidden;
+    }
+    .flavor-stack,
+    .cart-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      display: grid;
+      grid-template-rows: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      overflow: auto;
+      padding-right: 0;
+    }
+    .cart-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-width: 0;
+      gap: 10px;
+      align-items: center;
+      justify-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+    }
+    .cart-count {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      max-width: 100%;
+      min-width: 0;
+    }
+    .cart-qty { min-width: 1.15em; text-align: center; font-size: clamp(34px, 4.2vw, 58px); line-height: 1; font-weight: 1000; }
+    .mini { min-width: 48px; min-height: 48px; padding: 4px 8px; border-radius: 12px; font-size: 32px; line-height: 1; }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      border-radius: 12px;
+      background: #fbf7fb;
+      border: 1px solid var(--line);
+      padding: 5px;
+      margin-top: 4px;
+      font-weight: 1000;
+      font-size: 13px;
+    }
+    .cart-total strong { font-size: clamp(16px, 1.8vw, 22px); }
+    #cartSummary { flex: 0 0 auto; }
+    .cart-actions {
+      flex: 1 1 0;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .cart-actions button {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      font-size: clamp(18px, 2.2vw, 28px);
+    }
+
+    .wait-panel {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .wait-panel h2 { margin-bottom: 0; }
+    .wait-count {
+      font-size: clamp(20px, 2.5vw, 34px);
+      font-weight: 1000;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    #nextBox {
+      display: grid;
+      gap: 6px;
+      flex: 0 0 auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .next-card {
+      position: relative;
+      border-radius: 16px;
+      padding: 7px;
+      background: linear-gradient(135deg, #fff2f7, #f1eeff);
+      border: 2px solid var(--accent);
+      box-shadow: var(--shadow);
+      height: clamp(250px, 34svh, 380px);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+    }
+    .next-card[data-act="finish"] { cursor: pointer; }
+    .finish-undo {
+      display: grid;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      animation: finish-undo-fade 5000ms linear forwards;
+    }
+    .finish-undo-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    .finish-undo button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      background: transparent;
+      box-shadow: none;
+    }
+    .finish-undo-gauge {
+      height: 3px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: #eadfea;
+    }
+    .finish-undo-gauge::before {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent2);
+      animation: finish-undo-gauge 5000ms linear forwards;
+      transform-origin: left center;
+    }
+    @keyframes finish-undo-gauge {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+    @keyframes finish-undo-fade {
+      0%, 80% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+    .next-title { font-size: clamp(24px, 3.4vw, 40px); font-weight: 1000; line-height: 0.9; margin: 1px 0 4px; }
+    .next-items {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: minmax(56px, max-content);
+      align-content: start;
+      gap: 5px;
+      margin: 4px 0;
+      overflow: auto;
+    }
+    .next-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.75);
+      font-size: clamp(18px, 2.2vw, 28px);
+      line-height: 1.08;
+      font-weight: 1000;
+    }
+    .next-item.white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; }
+    .next-item.strawberry { background: linear-gradient(135deg, #ffd9e8, #ff8fbd); color: #641437; }
+    .next-item.bluehawaii { background: linear-gradient(135deg, #d8f3ff, #7fd8ff); color: #063d67; }
+    .next-item.melon { background: linear-gradient(135deg, #dcffd8, #96e974); color: #17391f; }
+    .next-item.lemon { background: linear-gradient(135deg, #fff8b6, #ffe54a); color: #4a3b00; }
+    .next-item span:first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .queue-panel {
+      min-height: 0;
+      height: 100%;
+    }
+    .queue-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      gap: 2px;
+      overflow: auto;
+    }
+    .order {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 6px 44px 6px 8px;
+      padding-right: 44px !important;
+      background: #fff;
+    }
+    .order-no {
+      display: grid;
+      place-items: center;
+      min-width: 48px;
+      height: 34px;
+      border-radius: 6px;
+      background: #f6eff6;
+      font-size: clamp(15px, 1.35vw, 20px);
+      font-weight: 1000;
+    }
+    .order-info { min-width: 0; }
+    .order-title {
+      font-size: clamp(18px, 1.9vw, 26px);
+      line-height: 1.08;
+      font-weight: 900;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal;
+      margin-bottom: 0;
+    }
+    .order-items { color: var(--muted); font-size: clamp(13px, 1.25vw, 18px); line-height: 1.1; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .next-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .next-heading h2 { margin-bottom: 0; }
+    .next-heading .order-menu {
+      position: static;
+      transform: none;
+      flex: 0 0 auto;
+    }
+    .order-menu {
+      position: absolute;
+      right: 4px;
+      top: calc(50% - 17px);
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 24px;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    .stat-wrap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .stat { background: #fbf7fb; border: 1px solid var(--line); border-radius: 14px; padding: 7px; text-align: center; }
+    .stat .num { font-size: clamp(20px, 2.2vw, 30px); font-weight: 1000; line-height: 1; }
+
+    .ok { color: white; background: var(--ok); }
+    .ok:disabled { opacity: 0.38; cursor: not-allowed; }
+    .danger { color: white; background: var(--danger); }
+    .warn { color: white; background: var(--warn); }
+    .ghost { background: transparent; box-shadow: none; border: 1px solid var(--line); }
+
+    input[type="number"] {
+      width: 86px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+    th, td { padding: 5px 4px; border-bottom: 1px solid var(--line); text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    details { min-height: 0; }
+    summary { cursor: pointer; font-weight: 900; font-size: 16px; }
+
+    .toast {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      background: var(--ink);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-weight: bold;
+      transition: 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(47, 36, 48, 0.42);
+    }
+    #cancelOrderConfirmModal {
+      z-index: 320;
+    }
+    .checkout-modal {
+      width: min(420px, 100%);
+      max-height: min(620px, 92svh);
+      overflow: auto;
+      border-radius: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 50px rgba(47, 36, 48, 0.24);
+      padding: 16px;
+    }
+    .checkout-title {
+      font-size: clamp(22px, 2.4vw, 30px);
+      line-height: 1;
+      font-weight: 1000;
+      margin-bottom: 12px;
+    }
+    .checkout-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .checkout-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #fbf7fb;
+      font-size: clamp(17px, 1.8vw, 24px);
+      font-weight: 900;
+    }
+    .edit-order-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .edit-order-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #fbf7fb;
+      font-weight: 900;
+    }
+    .edit-order-row.white,
+    .edit-order-row.strawberry,
+    .edit-order-row.bluehawaii,
+    .edit-order-row.melon,
+    .edit-order-row.lemon {
+      border-color: transparent;
+    }
+    .edit-order-row.white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; text-shadow: none; }
+    .edit-order-row.strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); color: #181018; text-shadow: none; }
+    .edit-order-row.bluehawaii { background: linear-gradient(135deg, #1397ff, #72d6ff); color: #101828; text-shadow: none; }
+    .edit-order-row.melon { background: linear-gradient(135deg, #36c46f, #a7ee7b); color: #17391f; text-shadow: none; }
+    .edit-order-row.lemon { background: linear-gradient(135deg, #ffe54a, #fff8a6); color: #4a3b00; text-shadow: none; }
+    .edit-order-name {
+      min-width: 0;
+      font-size: clamp(16px, 1.6vw, 22px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .edit-order-qty {
+      min-width: 2.3em;
+      text-align: center;
+      font-size: clamp(20px, 2vw, 30px);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+    .edit-order-row button {
+      min-width: 42px;
+      min-height: 42px;
+      padding: 6px 10px;
+      font-size: 24px;
+      line-height: 1;
+      background: rgba(255,255,255,0.72);
+    }
+    .checkout-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      padding: 12px 2px 14px;
+      font-weight: 1000;
+      font-size: clamp(18px, 1.9vw, 24px);
+    }
+    .checkout-total strong {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+    }
+    .checkout-payment {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf7fb;
+      font-weight: 900;
+    }
+    .checkout-payment label,
+    .checkout-change {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-size: clamp(17px, 1.7vw, 22px);
+    }
+    .checkout-payment input {
+      width: min(190px, 52%);
+      text-align: right;
+      font-size: 20px;
+    }
+    .checkout-money-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .checkout-money-buttons button {
+      display: grid;
+      gap: 3px;
+      justify-items: center;
+      align-content: center;
+      min-height: 44px;
+      padding: 5px;
+      font-weight: 1000;
+    }
+    .checkout-money-buttons img {
+      display: block;
+      width: 100%;
+      height: 44px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .checkout-money-label {
+      font-size: clamp(12px, 1.25vw, 16px);
+      line-height: 1;
+      color: var(--ink);
+      pointer-events: none;
+    }
+    .checkout-change strong {
+      font-size: clamp(22px, 2.4vw, 32px);
+      line-height: 1;
+    }
+    .checkout-change.is-short strong {
+      color: var(--danger);
+    }
+    .checkout-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .checkout-actions button {
+      min-height: 56px;
+      font-size: clamp(18px, 1.8vw, 24px);
+    }
+    .danger-zone {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .danger-outline {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid rgba(217,63,63,0.58);
+      color: var(--danger);
+      background: rgba(217,63,63,0.06);
+      box-shadow: none;
+    }
+    .confirm-text {
+      margin: 0 0 14px;
+      color: var(--ink);
+      font-size: clamp(17px, 1.7vw, 22px);
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 980px) {
+      .order-view { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+      .left-col { grid-row: auto; }
+      .center-col { min-height: 0; }
+    }
+
+    @media (max-width: 680px) {
+      :root { --radius: 10px; --shadow: 0 4px 12px rgba(80, 40, 70, 0.1); }
+      html, body { height: 100%; overflow: hidden; }
+      body { height: 100svh; min-height: 0; }
+      header { gap: 4px; padding: 5px 6px; }
+      h1 { font-size: 15px; }
+      h2 { font-size: 12px; margin-bottom: 3px; }
+      button { border-radius: 10px; min-height: 32px; padding: 7px 8px; font-size: 13px; }
+      .admin-tab-btn { width: 32px; min-width: 32px; height: 32px; min-height: 32px; font-size: 16px; }
+      .tabbar { gap: 4px; padding: 4px 6px; }
+      main { height: auto; padding: 4px; gap: 4px; overflow: hidden; }
+      .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
+      .admin-view { grid-template-columns: 1fr; grid-template-rows: none; }
+      .left-col { grid-row: auto; }
+      .col { gap: 4px; overflow: hidden; }
+      .left-col { grid-template-rows: minmax(0, 1fr); }
+      .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
+      .panel { padding: 5px; overflow: hidden; }
+      .wait-panel { gap: 4px; }
+      .wait-count { font-size: 15px; }
+      .subtle { font-size: 10px; margin-bottom: 3px; }
+      .tiny { font-size: 9px; }
+      .grid-2 { grid-template-columns: 1fr 1fr; gap: 4px; }
+      .flavor-btn { min-height: clamp(56px, 12svh, 78px); font-size: 16px; }
+      .flavor-btn small { font-size: 10px; margin-top: 4px; }
+      .cart-entry { gap: 2px; }
+      .flavor-stack, .cart-list, .list { gap: 3px; }
+      .cart-row { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 2px; }
+      .cart-qty { min-width: 1em; font-size: 28px; }
+      .cart-count { gap: 2px; }
+      .mini { min-width: 30px; min-height: 34px; padding: 0px 4px; border-radius: 9px; font-size: 24px; }
+      .cart-total { padding: 4px; margin-top: 3px; font-size: 12px; }
+      .cart-total strong { font-size: 16px; }
+      .cart-actions { gap: 3px; margin-top: 3px; }
+      .cart-actions button { min-height: 20px; padding: 20px 5px; font-size: 22px; }
+      .next-card { height: clamp(187px, 37.4svh, 242px); padding: 5px; border-radius: 10px; }
+      .next-card > button.ok { min-height: 22px; padding: 18px 5px !important; font-size: 16px !important; }
+      .next-title { font-size: 24px; margin-bottom: 2px; }
+      .next-item { gap: 4px; padding: 3px 4px; border-radius: 7px; font-size: 14px; }
+      .order { grid-template-columns: auto 1fr; }
+      .order-no { min-width: 34px; height: 26px; font-size: 12px; }
+      .order-title { font-size: 13px; }
+      .order-items { font-size: 10px; }
+      .queue-wait { font-size: 11px; }
+      table { font-size: 10px; margin-top: 3px; }
+      th, td { padding: 2px 1px; }
+    }
+
+    @media (max-width: 680px) and (orientation: portrait) {
+      :root { --radius: 9px; }
+      header { gap: 4px; padding: 4px 5px; }
+      h1 { font-size: 14px; }
+      h2 { font-size: 11px; margin-bottom: 2px; }
+      button { min-height: 29px; padding: 6px 7px; font-size: 12px; border-radius: 9px; }
+      .admin-tab-btn { width: 29px; min-width: 29px; height: 29px; min-height: 29px; font-size: 15px; }
+      .tabbar { gap: 4px; padding: 4px 5px; }
+      main { padding: 4px; gap: 4px; }
+      .col { gap: 4px; }
+      .panel { padding: 4px; }
+      .wait-panel { gap: 4px; }
+      .wait-count { font-size: 14px; }
+      .subtle { font-size: 9px; margin-bottom: 2px; }
+      .tiny { font-size: 8px; }
+      .grid-2 { gap: 4px; }
+      .flavor-btn { min-height: clamp(50px, 10.8svh, 70px); font-size: 14px; }
+      .flavor-btn small { font-size: 9px; margin-top: 4px; }
+      .flavor-stack,
+      .cart-list,
+      .list { gap: 3px; }
+      .cart-row { gap: 2px; padding: 2px; border-radius: 9px; }
+      .cart-qty { font-size: 25px; }
+      .mini { min-width: 27px; min-height: 31px; padding: 0 4px; border-radius: 8px; font-size: 22px; }
+      .cart-total { padding: 4px; margin-top: 3px; font-size: 11px; }
+      .cart-total strong { font-size: 14px; }
+      .cart-actions { gap: 3px; margin-top: 3px; }
+      .cart-actions button { min-height: 18px; padding: 18px 5px; font-size: 20px; }
+      .next-card { height: clamp(280px, 48svh, 330px); padding: 5px; border-radius: 9px; }
+      .next-items {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: repeat(5, minmax(0, 1fr));
+        grid-auto-rows: 0;
+        align-content: stretch;
+        overflow: hidden;
+      }
+      .next-item { min-height: 0; }
+      .next-item span:last-child { font-size: 2em; }
+      .next-card > button.ok { min-height: 20px; padding: 16px 5px !important; font-size: 14px !important; }
+      .next-title { font-size: 22px; }
+      .next-item { gap: 4px; padding: 3px 4px; border-radius: 6px; font-size: 13px; }
+      .order { gap: 7px; padding: 5px 7px; }
+      .order-no { min-width: 31px; height: 23px; font-size: 11px; }
+      .order-title { font-size: 12px; }
+      .order-items { font-size: 9px; }
+      .queue-wait { font-size: 10px; }
+      table { font-size: 9px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 620px) and (hover: none) and (pointer: coarse) {
+      :root { --radius: 9px; --shadow: 0 3px 10px rgba(80, 40, 70, 0.1); }
+      html, body { height: 100%; overflow: hidden; }
+      body { height: 100svh; min-height: 0; }
+      @supports (height: 100dvh) {
+        body { height: 100dvh; }
+      }
+      header { gap: 3px; min-height: 0; padding: 1px 5px; }
+      h1 { font-size: 12px; line-height: 1; }
+      h2 { font-size: 10px; line-height: 1; margin-bottom: 1px; }
+      button { border-radius: 8px; min-height: 24px; padding: 5px 7px; font-size: 11px; line-height: 1.05; }
+      .admin-tab-btn { width: 24px; min-width: 24px; height: 24px; min-height: 24px; font-size: 13px; }
+      .tabbar { gap: 3px; padding: 2px 5px; }
+      main { padding: 2px 4px; gap: 3px; overflow: hidden; }
+      .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
+      .col { gap: 3px; overflow: hidden; }
+      .left-col { grid-template-rows: minmax(0, 1fr); }
+      .center-col { grid-template-rows: auto auto minmax(0, 1fr); }
+      .panel { padding: 3px; overflow: hidden; }
+      .wait-panel { gap: 3px; }
+      .wait-count { font-size: 12px; }
+      .subtle { font-size: 8px; margin-bottom: 1px; }
+      .tiny { font-size: 8px; }
+      .grid-2 { gap: 3px; }
+      .flavor-btn { min-height: clamp(32px, 11svh, 44px); font-size: 15px; }
+      .flavor-btn small { font-size: 8px; margin-top: 2px; }
+      .cart-entry { gap: 2px; }
+      .flavor-stack, .cart-list, .list { gap: 1px; }
+      .cart-row { grid-template-columns: 1fr; gap: 2px; padding: 2px; border-radius: 5px; line-height: 1; }
+      .cart-qty { min-width: 1em; font-size: 18px; }
+      .cart-count { gap: 2px; }
+      .mini { min-width: 22px; min-height: 24px; padding: 1px 3px; border-radius: 6px; font-size: 16px; line-height: 1; }
+      .cart-total { padding: 1px 2px; margin-top: 1px; font-size: 8px; line-height: 1.05; }
+      .cart-total strong { font-size: 10px; }
+      .cart-actions { gap: 2px; margin-top: 1px; }
+      .cart-actions button { min-height: 20px; padding: 2px 5px; font-size: 22px; }
+      .next-card { height: clamp(139px, 39.6svh, 172px); padding: 3px; border-radius: 8px; overflow: hidden; }
+      .next-title { font-size: 18px; margin-bottom: 0; }
+      .next-items { gap: 2px; margin: 1px 0; }
+      .next-item { gap: 3px; padding: 2px 3px; border-radius: 5px; font-size: 12px; line-height: 1; }
+      .next-card > button.ok { min-height: 22px; padding: 10px 5px !important; font-size: 22px !important; }
+      .order { gap: 3px; padding: 2px 3px; grid-template-columns: auto minmax(0, 1fr); }
+      .order-no { min-width: 26px; height: 19px; font-size: 10px; }
+      .order-title { font-size: 10px; }
+      .order-items { font-size: 8px; }
+      table { font-size: 8px; margin-top: 1px; }
+      th, td { padding: 1px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍭 綿菓子注文アプリ_0627</h1>
+    <button class="tab-btn admin-tab-btn" data-act="tab" data-tab="admin" aria-label="管理" title="管理">⚙️</button>
+  </header>
+
+  <nav class="tabbar" aria-label="画面切り替え">
+    <button class="tab-btn active" data-act="tab" data-tab="order">注文</button>
+    <button class="tab-btn" data-act="tab" data-tab="line">行列</button>
+  </nav>
+
+  <main id="orderTab" class="order-view">
+    <section class="col left-col">
+      <div class="panel order-cart-panel">
+        <h2>注文入力</h2>
+        <div class="cart-entry">
+          <div class="flavor-stack" id="flavorBox"></div>
+          <div class="cart-list" id="cartBox"></div>
+        </div>
+        <div id="cartSummary"></div>
+        <div class="cart-actions">
+          <button class="ok" data-act="confirmGroup">会計</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="col center-col">
+      <div class="panel wait-panel">
+        <h2>待ち</h2>
+        <div class="wait-count" id="queueWait"></div>
+      </div>
+
+      <div class="panel">
+        <div class="next-heading">
+          <h2>つくる</h2>
+          <span id="nextMenuSlot"></span>
+        </div>
+        <div id="nextBox"></div>
+      </div>
+
+      <div class="panel queue-panel">
+        <h2 class="queue-heading">次以降の注文</h2>
+        <div class="list queue-list" id="queueBox"></div>
+      </div>
+    </section>
+  </main>
+
+  <main id="lineTab" class="line-view" hidden>
+    <section class="col">
+      <div class="line-wait">
+        <div class="line-wait-label">只今の待ち時間</div>
+        <div class="line-wait-minutes"><span id="lineWaitMinutes">0</span>分</div>
+        <div class="line-wait-detail" id="lineWaitDetail"></div>
+      </div>
+      <div class="panel line-panel">
+        <h2>行列</h2>
+        <div class="line-label">会計待ち列の人数</div>
+        <div class="line-count" id="lineCount">0</div>
+        <div class="line-actions">
+          <button class="ghost" data-act="lineMinus" aria-label="会計待ち列を1人減らす">-</button>
+          <button class="ok" data-act="linePlus" aria-label="会計待ち列を1人増やす">+</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main id="adminTab" class="admin-view" hidden>
+    <section class="col">
+      <div class="panel">
+        <h2>保存メニュー</h2>
+        <div class="admin-settings">
+          <label>単価 <input type="number" id="priceInput" step="10" /> 円</label>
+          <label>綿菓子一個あたりの時間 <input type="number" id="cottonSecondsInput" min="1" step="5" /> 秒</label>
+          <div class="admin-actions">
+            <button class="ghost" data-act="savePrice">保存</button>
+            <button class="ghost" data-act="csv">CSV</button>
+            <button class="ghost" data-act="json">バックアップ</button>
+            <button class="danger" data-act="reset">全消去</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>集計</h2>
+        <div id="summaryTable"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="checkoutModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <div class="checkout-title" id="checkoutTitle">会計確認</div>
+      <div class="checkout-list" id="checkoutItems"></div>
+      <div class="checkout-total">
+        <span>合計</span>
+        <strong id="checkoutTotal"></strong>
+      </div>
+      <div class="checkout-payment">
+        <label for="checkoutTendered">
+          <span>お預かり</span>
+          <input type="number" id="checkoutTendered" min="0" step="10" inputmode="numeric" autocomplete="off" />
+        </label>
+        <div class="checkout-money-buttons" aria-label="money buttons">
+          <button class="ghost" data-act="addTendered" data-amount="10000" aria-label="10000 yen"><img src="img/10000yen.png" alt="10,000" /><span class="checkout-money-label">10,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="5000" aria-label="5000 yen"><img src="img/5000yen.png" alt="5,000" /><span class="checkout-money-label">5,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="1000" aria-label="1000 yen"><img src="img/1000yen.png" alt="1,000" /><span class="checkout-money-label">1,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="500" aria-label="500 yen"><img src="img/500yen.png" alt="500" /><span class="checkout-money-label">500円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="100" aria-label="100 yen"><img src="img/100yen.png" alt="100" /><span class="checkout-money-label">100円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="50" aria-label="50 yen"><img src="img/50yen.png" alt="50" /><span class="checkout-money-label">50円</span></button>
+        </div>
+        <div class="checkout-change" id="checkoutChangeRow">
+          <span>お釣り</span>
+          <strong id="checkoutChange">0円</strong>
+        </div>
+      </div>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="cancelCheckout">キャンセル</button>
+        <button class="ok" data-act="finalizeCheckout">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="editOrderModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="editOrderTitle">
+      <div class="checkout-title" id="editOrderTitle">注文を修正</div>
+      <div class="edit-order-list" id="editOrderItems"></div>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="cancelEditOrder">キャンセル</button>
+        <button class="ok" data-act="saveEditOrder">保存</button>
+      </div>
+      <div class="danger-zone">
+        <button class="danger-outline" data-act="askCancelOrder">この注文を取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="cancelOrderConfirmModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderConfirmTitle">
+      <div class="checkout-title" id="cancelOrderConfirmTitle">注文取消</div>
+      <p class="confirm-text" id="cancelOrderConfirmText"></p>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="backToEditOrder">戻る</button>
+        <button class="danger" data-act="confirmCancelOrder">注文を取り消す</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const KEY = "cc_data_v4_cart_groups_0627";
+    const FLAVORS = [
+      { k: "white", n: "ホワイト", c: "white" },
+      { k: "strawberry", n: "イチゴ", c: "strawberry" },
+      { k: "bluehawaii", n: "ブルーハワイ", c: "bluehawaii" },
+      { k: "melon", n: "メロン", c: "melon" },
+      { k: "lemon", n: "レモン", c: "lemon" }
+    ];
+    const FLAVOR_NAMES = new Map(FLAVORS.map(f => [f.k, f.n]));
+    const DEFAULT_STATE = { qty: 1, price: 150, cottonSeconds: 60, lineCount: 0, nextGroupId: 1, cart: [], orders: [] };
+
+    const clone = obj => JSON.parse(JSON.stringify(obj));
+    const loadState = () => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY)) || clone(DEFAULT_STATE);
+      } catch {
+        return clone(DEFAULT_STATE);
+      }
+    };
+
+    let state = loadState();
+    let editingOrderId = null;
+    let editOrderDraft = [];
+    let finishUndo = null;
+    let finishUndoTimer = null;
+    const clickSound = new Audio("sounds/click.mp3");
+    clickSound.preload = "auto";
+    const cashRegisterSound = new Audio("sounds/cash_register.mp3");
+    cashRegisterSound.preload = "auto";
+    const groupCreatedSound = new Audio("sounds/group_created.mp3");
+    groupCreatedSound.preload = "auto";
+    const cancelSound = new Audio("sounds/cancel.mp3");
+    cancelSound.preload = "auto";
+
+    const playClickSound = () => {
+      clickSound.currentTime = 0;
+      clickSound.play().catch(() => {});
+    };
+
+    const playCashRegisterSound = () => {
+      cashRegisterSound.currentTime = 0;
+      cashRegisterSound.play().catch(() => {});
+    };
+
+    const playGroupCreatedSound = () => {
+      groupCreatedSound.currentTime = 0;
+      groupCreatedSound.play().catch(() => {});
+    };
+
+    const playCancelSound = () => {
+      cancelSound.currentTime = 0;
+      cancelSound.play().catch(() => {});
+    };
+
+    const showFlavorAfterimage = button => {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const rect = button.getBoundingClientRect();
+      const afterimage = button.cloneNode(true);
+      afterimage.classList.remove("press-animate");
+      afterimage.classList.add("flavor-afterimage");
+      afterimage.removeAttribute("data-flavor");
+      afterimage.setAttribute("aria-hidden", "true");
+      Object.assign(afterimage.style, {
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`
+      });
+      document.body.appendChild(afterimage);
+      afterimage.addEventListener("animationend", () => afterimage.remove(), { once: true });
+    };
+
+    const normalizeState = () => {
+      state.qty = 1;
+      state.price = Number(state.price) || 150;
+      state.cottonSeconds = Math.max(1, Number(state.cottonSeconds) || 60);
+      state.lineCount = Math.max(0, Number(state.lineCount) || 0);
+      state.nextGroupId = Number(state.nextGroupId) || 1;
+      if (!Array.isArray(state.cart)) state.cart = [];
+      if (!Array.isArray(state.orders)) state.orders = [];
+
+      state.cart = state.cart
+        .map(i => ({ k: i.k, n: FLAVOR_NAMES.get(i.k), q: Number(i.q) || 0 }))
+        .filter(i => i.k && i.n && i.q > 0);
+
+      state.orders = state.orders
+        .map(o => {
+          const items = Array.isArray(o.items) ? o.items.map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 })).filter(i => i.k && i.n && i.q > 0) : [];
+          const price = Number(o.price) || state.price;
+          return {
+            id: o.id || Date.now(),
+            groupId: Number(o.groupId) || state.nextGroupId++,
+            items,
+            price,
+            total: Number(o.total) || items.reduce((sum, item) => sum + item.q, 0) * price,
+            s: o.s || "pending",
+            createdAt: o.createdAt || o.id || Date.now()
+          };
+        })
+        .filter(o => o.items.length > 0);
+    };
+
+    const save = () => { localStorage.setItem(KEY, JSON.stringify(state)); render(); };
+    const shortId = ts => String(ts).slice(-4);
+    const timeFmt = ts => new Date(Number(ts)).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    const yen = n => `${Number(n).toLocaleString()}円`;
+    const itemsQty = items => items.reduce((a, b) => a + b.q, 0);
+    const itemsText = items => items.map(i => `${i.n}${i.q}個`).join("・");
+
+    const showToast = msg => {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    };
+
+    const clearFinishUndo = () => {
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndoTimer = null;
+      finishUndo = null;
+      render();
+    };
+
+    const showFinishUndo = order => {
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndo = { id: order.id, groupId: order.groupId };
+      finishUndoTimer = setTimeout(() => {
+        finishUndoTimer = null;
+        finishUndo = null;
+        render();
+      }, 5000);
+    };
+
+    const undoLastFinished = () => {
+      if (!finishUndo) return;
+      const order = state.orders.find(o => String(o.id) === String(finishUndo.id));
+      if (!order || order.s !== "done") return clearFinishUndo();
+      order.s = "pending";
+      const groupId = order.groupId;
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndoTimer = null;
+      finishUndo = null;
+      save();
+      showToast(`G${groupId} を戻しました`);
+    };
+
+    const closeCheckoutModal = () => {
+      document.getElementById("checkoutModal").hidden = true;
+    };
+
+    const closeEditOrderModal = () => {
+      document.getElementById("editOrderModal").hidden = true;
+      document.getElementById("cancelOrderConfirmModal").hidden = true;
+      editingOrderId = null;
+      editOrderDraft = [];
+    };
+
+    const closeCancelOrderConfirmModal = () => {
+      document.getElementById("cancelOrderConfirmModal").hidden = true;
+    };
+
+    const openCancelOrderConfirmModal = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      document.getElementById("cancelOrderConfirmText").textContent = `注文 G${order.groupId} を取り消しますか？`;
+      document.getElementById("cancelOrderConfirmModal").hidden = false;
+    };
+
+    const renderEditOrderItems = () => {
+      document.getElementById("editOrderItems").innerHTML = editOrderDraft.map(item => `
+        <div class="edit-order-row ${item.k}">
+          <div class="edit-order-name">${item.n}</div>
+          <button class="ghost" data-act="editOrderMinus" data-k="${item.k}" ${item.q === 0 ? "disabled" : ""}>-</button>
+          <div class="edit-order-qty">${item.q}</div>
+          <button class="ghost" data-act="editOrderPlus" data-k="${item.k}">+</button>
+        </div>
+      `).join("");
+    };
+
+    const openEditOrderModal = id => {
+      const order = state.orders.find(o => String(o.id) === String(id));
+      if (!order || order.s !== "pending") return;
+      editingOrderId = order.id;
+      editOrderDraft = FLAVORS.map(f => {
+        const item = order.items.find(i => i.k === f.k);
+        return { k: f.k, n: f.n, q: item ? item.q : 0 };
+      });
+      renderEditOrderItems();
+      document.getElementById("editOrderModal").hidden = false;
+    };
+
+    const saveEditOrder = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      const items = editOrderDraft.filter(i => i.q > 0).map(i => ({ k: i.k, n: i.n, q: i.q }));
+      if (!items.length) return showToast("味を1個以上にしてね");
+      order.items = items;
+      order.total = itemsQty(order.items) * (Number(order.price) || state.price);
+      closeEditOrderModal();
+      save();
+      showToast(`G${order.groupId} を修正しました`);
+    };
+
+    const cancelEditingOrder = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      order.s = "canceled";
+      closeEditOrderModal();
+      save();
+      showToast(`G${order.groupId} を取り消しました`);
+    };
+
+    const checkoutTotalAmount = () => itemsQty(state.cart) * state.price;
+
+    const updateCheckoutChange = () => {
+      const total = checkoutTotalAmount();
+      const tenderedInput = document.getElementById("checkoutTendered");
+      const changeRow = document.getElementById("checkoutChangeRow");
+      const changeText = document.getElementById("checkoutChange");
+      const tenderedValue = Number(tenderedInput.value || 0);
+      const tendered = Math.max(0, Number.isFinite(tenderedValue) ? tenderedValue : 0);
+      const short = tendered < total;
+      changeRow.classList.toggle("is-short", short);
+      changeText.textContent = short ? `不足 ${yen(total - tendered)}` : yen(tendered - total);
+    };
+
+    const openCheckoutModal = () => {
+      if (!state.cart.length) return;
+      const cartQty = itemsQty(state.cart);
+      const cartTotal = checkoutTotalAmount();
+
+      document.getElementById("checkoutItems").innerHTML = state.cart.map(item => `
+        <div class="checkout-row">
+          <span>${item.n}</span>
+          <span>${item.q}個</span>
+        </div>
+      `).join("");
+      document.getElementById("checkoutTotal").textContent = yen(cartTotal);
+      document.getElementById("checkoutTendered").value = "";
+      updateCheckoutChange();
+      document.getElementById("checkoutModal").hidden = false;
+    };
+
+    const finalizeCheckout = () => {
+      if (!state.cart.length) {
+        closeCheckoutModal();
+        return;
+      }
+      const now = Date.now();
+      const groupId = state.nextGroupId;
+      const price = state.price;
+      const total = itemsQty(state.cart) * price;
+      state.orders.push({
+        id: now,
+        groupId,
+        items: state.cart.map(i => ({ ...i })),
+        price,
+        total,
+        s: "pending",
+        createdAt: now
+      });
+      state.nextGroupId += 1;
+      state.lineCount = Math.max(0, state.lineCount - 1);
+      state.cart = [];
+      closeCheckoutModal();
+      save();
+      showToast(`G${groupId} をキューに入れました`);
+    };
+
+    const setActiveTab = tab => {
+      document.getElementById("orderTab").hidden = tab !== "order";
+      document.getElementById("lineTab").hidden = tab !== "line";
+      document.getElementById("adminTab").hidden = tab !== "admin";
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+    };
+
+    const render = () => {
+      normalizeState();
+
+      state.qty = 1;
+
+      document.getElementById("flavorBox").innerHTML = FLAVORS.map(f =>
+        `<button class="flavor-btn ${f.c}" data-flavor="${f.k}">
+          <span class="flavor-name${f.k === "bluehawaii" ? " two-line" : ""}">${f.k === "bluehawaii" ? "ブルー<br>ハワイ" : f.n}</span><small>1個追加</small>
+        </button>`
+      ).join("");
+
+      const cartQty = itemsQty(state.cart);
+      const cartTotal = cartQty * state.price;
+      document.getElementById("lineCount").textContent = state.lineCount;
+      document.querySelector('[data-act="lineMinus"]').disabled = state.lineCount === 0;
+
+      document.getElementById("cartBox").innerHTML = FLAVORS.map(f => {
+        const item = state.cart.find(i => i.k === f.k);
+        const q = item ? item.q : 0;
+        return `
+        <div class="cart-row">
+          <div class="cart-count">
+            <div class="cart-qty">${q}</div>
+            <button class="mini ghost" data-act="cartMinus" data-k="${f.k}" ${q === 0 ? "disabled" : ""}>-</button>
+          </div>
+        </div>
+      `;
+      }).join("");
+
+      document.getElementById("cartSummary").innerHTML = `
+        <div class="cart-total">
+          <div>次 G${state.nextGroupId}<br><span class="tiny">${cartQty}個 × ${yen(state.price)}</span></div>
+          <strong>${yen(cartTotal)}</strong>
+        </div>`;
+
+      document.querySelector('[data-act="confirmGroup"]').disabled = state.cart.length === 0;
+
+      const pending = state.orders.filter(o => o.s === "pending");
+      const next = pending[0];
+      const waiting = pending.slice(1);
+      const pendingQty = pending.reduce((a, o) => a + itemsQty(o.items), 0);
+      const waitTargets = state.lineCount + pendingQty;
+      const waitMinutes = Math.ceil((state.cottonSeconds * waitTargets) / 60 / 5) * 5;
+      const waitMinutesEl = document.getElementById("lineWaitMinutes").parentElement;
+      waitMinutesEl.classList.remove("wait-blue", "wait-yellow", "wait-orange", "wait-red");
+      waitMinutesEl.classList.add(waitMinutes >= 20 ? "wait-red" : waitMinutes >= 15 ? "wait-orange" : waitMinutes >= 10 ? "wait-yellow" : "wait-blue");
+      document.getElementById("lineWaitMinutes").textContent = waitMinutes;
+      document.getElementById("lineWaitDetail").textContent = `${state.cottonSeconds}秒 × (${state.lineCount}人 + ${pendingQty}個)`;
+      document.getElementById("queueWait").textContent = `${pending.length}組 / ${pendingQty}個`;
+      document.getElementById("nextMenuSlot").innerHTML = next
+        ? `<button class="order-menu ghost" data-act="editOrder" data-id="${next.id}" aria-label="G${next.groupId} を修正">&#8942;</button>`
+        : "";
+
+      const stats = FLAVORS.map(f => {
+        const active = state.orders.filter(o => o.s !== "canceled");
+        const sum = active.reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        const p = state.orders.filter(o => o.s === "pending").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        const d = state.orders.filter(o => o.s === "done").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
+        const sale = active.reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q * (Number(o.price) || state.price), 0), 0);
+        return { n: f.n, sum, p, d, sale };
+      });
+      const total = stats.reduce((a, b) => a + b.sum, 0);
+      const totalSale = stats.reduce((a, b) => a + b.sale, 0);
+
+      const finishUndoHTML = finishUndo ? `
+        <div class="finish-undo">
+          <div class="finish-undo-row">
+            <span>G${finishUndo.groupId}を作りました</span>
+            <button class="ghost" data-act="undoFinish">元に戻す</button>
+          </div>
+          <div class="finish-undo-gauge" aria-hidden="true"></div>
+        </div>
+      ` : "";
+
+      document.getElementById("nextBox").innerHTML = (next ? `
+        <div class="next-card" data-act="finish" data-id="${next.id}">
+          <div class="next-title">G${next.groupId}</div>
+          <div class="next-items">
+            ${next.items.map(i => `<div class="next-item ${i.k}"><span>${i.n}</span><span>${i.q}個</span></div>`).join("")}
+          </div>
+          <button class="ok" style="width:100%; padding:10px; font-size:16px;" data-act="finish" data-id="${next.id}">このグループを作った！</button>
+        </div>
+      ` : `
+        <div class="next-card">
+          <div class="next-title">待ちなし</div>
+          <div class="next-items"></div>
+          <button class="ok" style="width:100%; padding:10px; font-size:16px;" disabled>このグループを作った！</button>
+        </div>
+      `) + finishUndoHTML;
+
+      const rowHTML = o => `
+        <div class="order">
+          <div class="order-no">G${o.groupId}</div>
+          <div class="order-info">
+            <div class="order-title">${itemsText(o.items)}</div>
+            <div class="order-items">${itemsQty(o.items)}個 / ${timeFmt(o.createdAt)}</div>
+          </div>
+          <button class="order-menu ghost" data-act="editOrder" data-id="${o.id}" aria-label="G${o.groupId} を修正">&#8942;</button>
+        </div>`;
+
+      document.getElementById("queueBox").innerHTML = waiting.map(o => rowHTML(o)).join("");
+
+      document.getElementById("priceInput").value = state.price;
+      document.getElementById("cottonSecondsInput").value = state.cottonSeconds;
+      const summaryHTML = `
+        <table>
+          <tr><th>味</th><th>販売</th><th>待ち</th><th>完了</th><th>売上</th></tr>
+          ${stats.map(s => `<tr><td>${s.n}</td><td>${s.sum}</td><td>${s.p}</td><td>${s.d}</td><td>${yen(s.sale)}</td></tr>`).join("")}
+          <tr><th>合計</th><th>${total}</th><th>${stats.reduce((a,b)=>a+b.p,0)}</th><th>${stats.reduce((a,b)=>a+b.d,0)}</th><th>${yen(totalSale)}</th></tr>
+        </table>`;
+      document.getElementById("summaryTable").innerHTML = summaryHTML;
+
+    };
+
+    document.body.addEventListener("input", e => {
+      if (e.target.id === "checkoutTendered") updateCheckoutChange();
+    });
+
+    document.body.addEventListener("click", async e => {
+      const btn = e.target.closest('button, .next-card[data-act="finish"]');
+      if (!btn || btn.disabled) return;
+
+      const { act, id, qty, flavor, k } = btn.dataset;
+      const feedbackButton = btn.matches("button")
+        ? btn
+        : btn.querySelector('button[data-act="finish"]');
+
+      if (feedbackButton && !feedbackButton.disabled) {
+        if (act === "finalizeCheckout") playCashRegisterSound();
+        else if (act === "finish") playGroupCreatedSound();
+        else if (act === "cartMinus" || act === "cancelCheckout" || act === "cancelEditOrder" || act === "backToEditOrder" || act === "lineMinus") playCancelSound();
+        else playClickSound();
+        if (feedbackButton.dataset.flavor) showFlavorAfterimage(feedbackButton);
+        feedbackButton.classList.remove("press-animate");
+        void feedbackButton.offsetWidth;
+        feedbackButton.classList.add("press-animate");
+        await new Promise(resolve => setTimeout(resolve, 150));
+        feedbackButton.classList.remove("press-animate");
+      }
+
+      if (act === "cancelCheckout") {
+        closeCheckoutModal();
+        return;
+      }
+      if (act === "cancelEditOrder") {
+        closeEditOrderModal();
+        return;
+      }
+      if (act === "backToEditOrder") {
+        closeCancelOrderConfirmModal();
+        return;
+      }
+      if (act === "finalizeCheckout") {
+        finalizeCheckout();
+        return;
+      }
+      if (act === "saveEditOrder") {
+        saveEditOrder();
+        return;
+      }
+      if (act === "undoFinish") {
+        undoLastFinished();
+        return;
+      }
+      if (act === "askCancelOrder") {
+        openCancelOrderConfirmModal();
+        return;
+      }
+      if (act === "confirmCancelOrder") {
+        cancelEditingOrder();
+        return;
+      }
+      if (act === "addTendered") {
+        const tenderedInput = document.getElementById("checkoutTendered");
+        const currentValue = Number(tenderedInput.value || 0);
+        const addValue = Number(btn.dataset.amount || 0);
+        const current = Number.isFinite(currentValue) ? currentValue : 0;
+        tenderedInput.value = current + addValue;
+        updateCheckoutChange();
+        return;
+      }
+
+      if (act === "tab") {
+        setActiveTab(btn.dataset.tab);
+      } else if (act === "editOrder") {
+        openEditOrderModal(id);
+      } else if (act === "editOrderPlus") {
+        const item = editOrderDraft.find(i => i.k === k);
+        if (!item) return;
+        item.q += 1;
+        renderEditOrderItems();
+      } else if (act === "editOrderMinus") {
+        const item = editOrderDraft.find(i => i.k === k);
+        if (!item || item.q <= 0) return;
+        item.q -= 1;
+        renderEditOrderItems();
+      } else if (act === "linePlus") {
+        state.lineCount += 1;
+        save();
+      } else if (act === "lineMinus") {
+        if (state.lineCount <= 0) return;
+        state.lineCount -= 1;
+        save();
+      } else if (flavor) {
+        const f = FLAVORS.find(x => x.k === flavor);
+        if (!f) return;
+        const item = state.cart.find(i => i.k === f.k);
+        if (item) item.q += 1;
+        else state.cart.push({ k: f.k, n: f.n, q: 1 });
+        save();
+        showToast(`${f.n} 1個をカゴに追加！`);
+      } else if (act === "cartMinus") {
+        const item = state.cart.find(i => i.k === k);
+        if (!item) return;
+        item.q -= 1;
+        if (item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
+        save();
+      } else if (act === "confirmGroup") {
+        openCheckoutModal();
+        return;
+        if (!state.cart.length) return;
+        const now = Date.now();
+        const groupId = state.nextGroupId;
+        const price = state.price;
+        const total = itemsQty(state.cart) * price;
+        state.orders.push({
+          id: now,
+          groupId,
+          items: state.cart.map(i => ({ ...i })),
+          price,
+          total,
+          s: "pending",
+          createdAt: now
+        });
+        state.nextGroupId += 1;
+        state.cart = [];
+        save();
+        showToast(`G${groupId} をキューに入れました！`);
+      } else if (act === "finish") {
+        const order = state.orders.find(o => String(o.id) === String(id));
+        if (!order) return;
+        order.s = "done";
+        showFinishUndo(order);
+        save();
+        showToast(`G${order.groupId} を完了！`);
+      } else if (act === "savePrice") {
+        const price = Number(document.getElementById("priceInput").value);
+        if (!Number.isFinite(price) || price < 0) return showToast("単価を確認してね");
+        const cottonSeconds = Number(document.getElementById("cottonSecondsInput").value);
+        if (!Number.isFinite(cottonSeconds) || cottonSeconds <= 0) return showToast("秒数を確認してね");
+        state.price = price;
+        state.cottonSeconds = cottonSeconds;
+        save();
+        showToast("単価を保存したよ！");
+      } else if (act === "reset" && confirm("全消去するよ？元には戻せないからね！")) {
+        if (finishUndoTimer) clearTimeout(finishUndoTimer);
+        finishUndoTimer = null;
+        finishUndo = null;
+        state.cart = [];
+        state.orders = [];
+        state.lineCount = 0;
+        state.nextGroupId = 1;
+        save();
+        showToast("全消去しました");
+      } else if (act === "csv") {
+        const rows = ["groupId,orderId,味,数量,状態,受付時刻,売上"];
+        state.orders.forEach(o => {
+          const price = Number(o.price) || state.price;
+          o.items.forEach(i => {
+            const sale = o.s === "canceled" ? 0 : i.q * price;
+            rows.push(`${o.groupId},${o.id},${i.n},${i.q},${o.s},${new Date(o.createdAt).toLocaleString("ja-JP")},${sale}`);
+          });
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([String.fromCharCode(0xfeff) + rows.join(String.fromCharCode(10))], { type: "text/csv" }));
+        a.download = `orders_${Date.now()}.csv`;
+        a.click();
+      } else if (act === "json") {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }));
+        a.download = `backup_${Date.now()}.json`;
+        a.click();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
