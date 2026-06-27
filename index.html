@@ -91,6 +91,19 @@
     }
     button:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
     .tab-btn.active { color: white; background: var(--accent2); }
+    .admin-tab-btn {
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 20px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
 
     main {
       flex: 1 1 auto;
@@ -106,6 +119,97 @@
       grid-template-columns: minmax(320px, 720px);
       align-content: start;
       justify-content: center;
+    }
+    .line-view {
+      grid-template-columns: minmax(320px, 720px);
+      align-content: start;
+      justify-content: center;
+    }
+    #lineTab {
+      --panel: #111827;
+      --ink: #f8fafc;
+      --muted: #aab6c7;
+      --line: #334155;
+      --accent2: #93c5fd;
+      --danger: #f87171;
+      --ok: #16a34a;
+      background: radial-gradient(circle at top, rgba(59,130,246,0.22), transparent 28rem), #070b14;
+      color: var(--ink);
+    }
+    .line-panel {
+      display: grid;
+      gap: 18px;
+      text-align: center;
+      padding: clamp(18px, 4vw, 34px);
+    }
+    #lineTab .panel,
+    #lineTab .line-wait {
+      background: rgba(17, 24, 39, 0.96);
+      border-color: var(--line);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+    }
+    #lineTab .line-wait {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .line-label {
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 28px);
+      font-weight: 900;
+    }
+    .line-wait {
+      display: grid;
+      gap: 6px;
+      text-align: center;
+      padding: clamp(12px, 3vw, 24px) 4px 2px;
+    }
+    .line-wait-label {
+      color: var(--muted);
+      font-size: clamp(16px, 1.8vw, 24px);
+      font-weight: 900;
+    }
+    .line-wait-minutes {
+      font-size: clamp(84px, 16vw, 192px);
+      line-height: 1;
+      font-weight: 1000;
+      color: var(--accent2);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 28px rgba(147, 197, 253, 0.28);
+    }
+    .line-wait-minutes.wait-blue { color: #60a5fa; }
+    .line-wait-minutes.wait-yellow { color: #facc15; }
+    .line-wait-minutes.wait-orange { color: #fb923c; }
+    .line-wait-minutes.wait-red { color: var(--danger); }
+    .line-wait-detail {
+      color: var(--muted);
+      font-size: clamp(13px, 1.35vw, 18px);
+      font-weight: 800;
+    }
+    .line-count {
+      font-size: clamp(76px, 16vw, 180px);
+      line-height: 0.9;
+      font-weight: 1000;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .line-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .line-actions button {
+      min-height: clamp(78px, 12vw, 130px);
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: 1;
+    }
+    #lineTab .line-actions .ghost {
+      color: var(--ink);
+      background: #1f2937;
+      border-color: #475569;
+    }
+    #lineTab .line-actions .ok {
+      background: #16a34a;
+      box-shadow: 0 10px 24px rgba(22, 163, 74, 0.24), inset 0 -2px 0 rgba(0,0,0,0.18);
     }
 
     .col {
@@ -135,6 +239,24 @@
     .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .flex { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .admin-settings {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: start;
+    }
+    .admin-settings label {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
     .qty-btn.active { color: white; background: var(--accent2); }
     .flavor-btn {
@@ -257,12 +379,15 @@
     }
 
     #nextBox {
+      display: grid;
+      gap: 6px;
       flex: 0 0 auto;
       min-height: 0;
       overflow: visible;
     }
 
     .next-card {
+      position: relative;
       border-radius: 16px;
       padding: 7px;
       background: linear-gradient(135deg, #fff2f7, #f1eeff);
@@ -275,6 +400,54 @@
       overflow: visible;
     }
     .next-card[data-act="finish"] { cursor: pointer; }
+    .finish-undo {
+      display: grid;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      animation: finish-undo-fade 5000ms linear forwards;
+    }
+    .finish-undo-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    .finish-undo button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      background: transparent;
+      box-shadow: none;
+    }
+    .finish-undo-gauge {
+      height: 3px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: #eadfea;
+    }
+    .finish-undo-gauge::before {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent2);
+      animation: finish-undo-gauge 5000ms linear forwards;
+      transform-origin: left center;
+    }
+    @keyframes finish-undo-gauge {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+    @keyframes finish-undo-fade {
+      0%, 80% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
     .next-title { font-size: clamp(24px, 3.4vw, 40px); font-weight: 1000; line-height: 0.9; margin: 1px 0 4px; }
     .next-items {
       flex: 1 1 auto;
@@ -325,9 +498,11 @@
       grid-template-columns: auto minmax(0, 1fr);
       gap: 8px;
       align-items: center;
+      position: relative;
       border: 1px solid var(--line);
       border-radius: 7px;
-      padding: 6px 8px;
+      padding: 6px 44px 6px 8px;
+      padding-right: 44px !important;
       background: #fff;
     }
     .order-no {
@@ -354,6 +529,31 @@
       margin-bottom: 0;
     }
     .order-items { color: var(--muted); font-size: clamp(13px, 1.25vw, 18px); line-height: 1.1; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .next-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .next-heading h2 { margin-bottom: 0; }
+    .next-heading .order-menu {
+      position: static;
+      transform: none;
+      flex: 0 0 auto;
+    }
+    .order-menu {
+      position: absolute;
+      right: 4px;
+      top: calc(50% - 17px);
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 24px;
+      line-height: 1;
+      box-shadow: none;
+    }
 
     .stat-wrap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .stat { background: #fbf7fb; border: 1px solid var(--line); border-radius: 14px; padding: 7px; text-align: center; }
@@ -405,6 +605,9 @@
       padding: 18px;
       background: rgba(47, 36, 48, 0.42);
     }
+    #cancelOrderConfirmModal {
+      z-index: 320;
+    }
     .checkout-modal {
       width: min(420px, 100%);
       max-height: min(620px, 92svh);
@@ -437,6 +640,56 @@
       background: #fbf7fb;
       font-size: clamp(17px, 1.8vw, 24px);
       font-weight: 900;
+    }
+    .edit-order-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .edit-order-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #fbf7fb;
+      font-weight: 900;
+    }
+    .edit-order-row.white,
+    .edit-order-row.strawberry,
+    .edit-order-row.bluehawaii,
+    .edit-order-row.melon,
+    .edit-order-row.lemon {
+      border-color: transparent;
+    }
+    .edit-order-row.white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; text-shadow: none; }
+    .edit-order-row.strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); color: #181018; text-shadow: none; }
+    .edit-order-row.bluehawaii { background: linear-gradient(135deg, #1397ff, #72d6ff); color: #101828; text-shadow: none; }
+    .edit-order-row.melon { background: linear-gradient(135deg, #36c46f, #a7ee7b); color: #17391f; text-shadow: none; }
+    .edit-order-row.lemon { background: linear-gradient(135deg, #ffe54a, #fff8a6); color: #4a3b00; text-shadow: none; }
+    .edit-order-name {
+      min-width: 0;
+      font-size: clamp(16px, 1.6vw, 22px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .edit-order-qty {
+      min-width: 2.3em;
+      text-align: center;
+      font-size: clamp(20px, 2vw, 30px);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+    .edit-order-row button {
+      min-width: 42px;
+      min-height: 42px;
+      padding: 6px 10px;
+      font-size: 24px;
+      line-height: 1;
+      background: rgba(255,255,255,0.72);
     }
     .checkout-total {
       display: flex;
@@ -517,6 +770,26 @@
       min-height: 56px;
       font-size: clamp(18px, 1.8vw, 24px);
     }
+    .danger-zone {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .danger-outline {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid rgba(217,63,63,0.58);
+      color: var(--danger);
+      background: rgba(217,63,63,0.06);
+      box-shadow: none;
+    }
+    .confirm-text {
+      margin: 0 0 14px;
+      color: var(--ink);
+      font-size: clamp(17px, 1.7vw, 22px);
+      font-weight: 900;
+      line-height: 1.35;
+    }
 
     @media (max-width: 980px) {
       .order-view { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
@@ -532,6 +805,7 @@
       h1 { font-size: 15px; }
       h2 { font-size: 12px; margin-bottom: 3px; }
       button { border-radius: 10px; min-height: 32px; padding: 7px 8px; font-size: 13px; }
+      .admin-tab-btn { width: 32px; min-width: 32px; height: 32px; min-height: 32px; font-size: 16px; }
       .tabbar { gap: 4px; padding: 4px 6px; }
       main { height: auto; padding: 4px; gap: 4px; overflow: hidden; }
       .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
@@ -577,6 +851,7 @@
       h1 { font-size: 14px; }
       h2 { font-size: 11px; margin-bottom: 2px; }
       button { min-height: 29px; padding: 6px 7px; font-size: 12px; border-radius: 9px; }
+      .admin-tab-btn { width: 29px; min-width: 29px; height: 29px; min-height: 29px; font-size: 15px; }
       .tabbar { gap: 4px; padding: 4px 5px; }
       main { padding: 4px; gap: 4px; }
       .col { gap: 4px; }
@@ -630,6 +905,7 @@
       h1 { font-size: 12px; line-height: 1; }
       h2 { font-size: 10px; line-height: 1; margin-bottom: 1px; }
       button { border-radius: 8px; min-height: 24px; padding: 5px 7px; font-size: 11px; line-height: 1.05; }
+      .admin-tab-btn { width: 24px; min-width: 24px; height: 24px; min-height: 24px; font-size: 13px; }
       .tabbar { gap: 3px; padding: 2px 5px; }
       main { padding: 2px 4px; gap: 3px; overflow: hidden; }
       .order-view { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: minmax(0, 1fr); }
@@ -671,15 +947,12 @@
 <body>
   <header>
     <h1>🍭 綿菓子注文アプリ_0627</h1>
-    <div class="flex">
-      <button class="ghost" data-act="undo">↶ 戻す</button>
-      <button class="ghost" data-act="redo">↷ やり直す</button>
-    </div>
+    <button class="tab-btn admin-tab-btn" data-act="tab" data-tab="admin" aria-label="管理" title="管理">⚙️</button>
   </header>
 
   <nav class="tabbar" aria-label="画面切り替え">
     <button class="tab-btn active" data-act="tab" data-tab="order">注文</button>
-    <button class="tab-btn" data-act="tab" data-tab="admin">管理</button>
+    <button class="tab-btn" data-act="tab" data-tab="line">行列</button>
   </nav>
 
   <main id="orderTab" class="order-view">
@@ -704,7 +977,10 @@
       </div>
 
       <div class="panel">
-        <h2>つくる</h2>
+        <div class="next-heading">
+          <h2>つくる</h2>
+          <span id="nextMenuSlot"></span>
+        </div>
         <div id="nextBox"></div>
       </div>
 
@@ -715,16 +991,38 @@
     </section>
   </main>
 
+  <main id="lineTab" class="line-view" hidden>
+    <section class="col">
+      <div class="line-wait">
+        <div class="line-wait-label">只今の待ち時間</div>
+        <div class="line-wait-minutes"><span id="lineWaitMinutes">0</span>分</div>
+        <div class="line-wait-detail" id="lineWaitDetail"></div>
+      </div>
+      <div class="panel line-panel">
+        <h2>行列</h2>
+        <div class="line-label">会計待ち列の人数</div>
+        <div class="line-count" id="lineCount">0</div>
+        <div class="line-actions">
+          <button class="ghost" data-act="lineMinus" aria-label="会計待ち列を1人減らす">-</button>
+          <button class="ok" data-act="linePlus" aria-label="会計待ち列を1人増やす">+</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <main id="adminTab" class="admin-view" hidden>
     <section class="col">
       <div class="panel">
         <h2>保存メニュー</h2>
-        <div class="flex" style="margin-top: 8px;">
+        <div class="admin-settings">
           <label>単価 <input type="number" id="priceInput" step="10" /> 円</label>
-          <button class="ghost" data-act="savePrice">保存</button>
-          <button class="ghost" data-act="csv">CSV</button>
-          <button class="ghost" data-act="json">バックアップ</button>
-          <button class="danger" data-act="reset">全消去</button>
+          <label>綿菓子一個あたりの時間 <input type="number" id="cottonSecondsInput" min="1" step="5" /> 秒</label>
+          <div class="admin-actions">
+            <button class="ghost" data-act="savePrice">保存</button>
+            <button class="ghost" data-act="csv">CSV</button>
+            <button class="ghost" data-act="json">バックアップ</button>
+            <button class="danger" data-act="reset">全消去</button>
+          </div>
         </div>
       </div>
 
@@ -768,10 +1066,35 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="editOrderModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="editOrderTitle">
+      <div class="checkout-title" id="editOrderTitle">注文を修正</div>
+      <div class="edit-order-list" id="editOrderItems"></div>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="cancelEditOrder">キャンセル</button>
+        <button class="ok" data-act="saveEditOrder">保存</button>
+      </div>
+      <div class="danger-zone">
+        <button class="danger-outline" data-act="askCancelOrder">この注文を取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="cancelOrderConfirmModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderConfirmTitle">
+      <div class="checkout-title" id="cancelOrderConfirmTitle">注文取消</div>
+      <p class="confirm-text" id="cancelOrderConfirmText"></p>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="backToEditOrder">戻る</button>
+        <button class="danger" data-act="confirmCancelOrder">注文を取り消す</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
-    const KEY = "cc_data_v4_cart_groups";
+    const KEY = "cc_data_v4_cart_groups_0627";
     const FLAVORS = [
       { k: "white", n: "ホワイト", c: "white" },
       { k: "strawberry", n: "イチゴ", c: "strawberry" },
@@ -780,7 +1103,7 @@
       { k: "lemon", n: "レモン", c: "lemon" }
     ];
     const FLAVOR_NAMES = new Map(FLAVORS.map(f => [f.k, f.n]));
-    const DEFAULT_STATE = { qty: 1, price: 150, nextGroupId: 1, cart: [], orders: [] };
+    const DEFAULT_STATE = { qty: 1, price: 150, cottonSeconds: 60, lineCount: 0, nextGroupId: 1, cart: [], orders: [] };
 
     const clone = obj => JSON.parse(JSON.stringify(obj));
     const loadState = () => {
@@ -792,13 +1115,18 @@
     };
 
     let state = loadState();
-    let history = { undo: [], redo: [] };
+    let editingOrderId = null;
+    let editOrderDraft = [];
+    let finishUndo = null;
+    let finishUndoTimer = null;
     const clickSound = new Audio("sounds/click.mp3");
     clickSound.preload = "auto";
     const cashRegisterSound = new Audio("sounds/cash_register.mp3");
     cashRegisterSound.preload = "auto";
     const groupCreatedSound = new Audio("sounds/group_created.mp3");
     groupCreatedSound.preload = "auto";
+    const cancelSound = new Audio("sounds/cancel.mp3");
+    cancelSound.preload = "auto";
 
     const playClickSound = () => {
       clickSound.currentTime = 0;
@@ -813,6 +1141,11 @@
     const playGroupCreatedSound = () => {
       groupCreatedSound.currentTime = 0;
       groupCreatedSound.play().catch(() => {});
+    };
+
+    const playCancelSound = () => {
+      cancelSound.currentTime = 0;
+      cancelSound.play().catch(() => {});
     };
 
     const showFlavorAfterimage = button => {
@@ -836,6 +1169,8 @@
     const normalizeState = () => {
       state.qty = 1;
       state.price = Number(state.price) || 150;
+      state.cottonSeconds = Math.max(1, Number(state.cottonSeconds) || 60);
+      state.lineCount = Math.max(0, Number(state.lineCount) || 0);
       state.nextGroupId = Number(state.nextGroupId) || 1;
       if (!Array.isArray(state.cart)) state.cart = [];
       if (!Array.isArray(state.orders)) state.orders = [];
@@ -845,19 +1180,23 @@
         .filter(i => i.k && i.n && i.q > 0);
 
       state.orders = state.orders
-        .map(o => ({
-          id: o.id || Date.now(),
-          groupId: Number(o.groupId) || state.nextGroupId++,
-          items: Array.isArray(o.items) ? o.items.map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 })).filter(i => i.k && i.n && i.q > 0) : [],
-          s: o.s || "pending",
-          createdAt: o.createdAt || o.id || Date.now()
-        }))
+        .map(o => {
+          const items = Array.isArray(o.items) ? o.items.map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 })).filter(i => i.k && i.n && i.q > 0) : [];
+          const price = Number(o.price) || state.price;
+          return {
+            id: o.id || Date.now(),
+            groupId: Number(o.groupId) || state.nextGroupId++,
+            items,
+            price,
+            total: Number(o.total) || items.reduce((sum, item) => sum + item.q, 0) * price,
+            s: o.s || "pending",
+            createdAt: o.createdAt || o.id || Date.now()
+          };
+        })
         .filter(o => o.items.length > 0);
     };
 
     const save = () => { localStorage.setItem(KEY, JSON.stringify(state)); render(); };
-    const snap = () => JSON.stringify(state);
-    const pushHist = () => { history.undo.push(snap()); history.redo = []; if (history.undo.length > 50) history.undo.shift(); };
     const shortId = ts => String(ts).slice(-4);
     const timeFmt = ts => new Date(Number(ts)).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
     const yen = n => `${Number(n).toLocaleString()}円`;
@@ -871,8 +1210,100 @@
       setTimeout(() => t.classList.remove("show"), 1500);
     };
 
+    const clearFinishUndo = () => {
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndoTimer = null;
+      finishUndo = null;
+      render();
+    };
+
+    const showFinishUndo = order => {
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndo = { id: order.id, groupId: order.groupId };
+      finishUndoTimer = setTimeout(() => {
+        finishUndoTimer = null;
+        finishUndo = null;
+        render();
+      }, 5000);
+    };
+
+    const undoLastFinished = () => {
+      if (!finishUndo) return;
+      const order = state.orders.find(o => String(o.id) === String(finishUndo.id));
+      if (!order || order.s !== "done") return clearFinishUndo();
+      order.s = "pending";
+      const groupId = order.groupId;
+      if (finishUndoTimer) clearTimeout(finishUndoTimer);
+      finishUndoTimer = null;
+      finishUndo = null;
+      save();
+      showToast(`G${groupId} を戻しました`);
+    };
+
     const closeCheckoutModal = () => {
       document.getElementById("checkoutModal").hidden = true;
+    };
+
+    const closeEditOrderModal = () => {
+      document.getElementById("editOrderModal").hidden = true;
+      document.getElementById("cancelOrderConfirmModal").hidden = true;
+      editingOrderId = null;
+      editOrderDraft = [];
+    };
+
+    const closeCancelOrderConfirmModal = () => {
+      document.getElementById("cancelOrderConfirmModal").hidden = true;
+    };
+
+    const openCancelOrderConfirmModal = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      document.getElementById("cancelOrderConfirmText").textContent = `注文 G${order.groupId} を取り消しますか？`;
+      document.getElementById("cancelOrderConfirmModal").hidden = false;
+    };
+
+    const renderEditOrderItems = () => {
+      document.getElementById("editOrderItems").innerHTML = editOrderDraft.map(item => `
+        <div class="edit-order-row ${item.k}">
+          <div class="edit-order-name">${item.n}</div>
+          <button class="ghost" data-act="editOrderMinus" data-k="${item.k}" ${item.q === 0 ? "disabled" : ""}>-</button>
+          <div class="edit-order-qty">${item.q}</div>
+          <button class="ghost" data-act="editOrderPlus" data-k="${item.k}">+</button>
+        </div>
+      `).join("");
+    };
+
+    const openEditOrderModal = id => {
+      const order = state.orders.find(o => String(o.id) === String(id));
+      if (!order || order.s !== "pending") return;
+      editingOrderId = order.id;
+      editOrderDraft = FLAVORS.map(f => {
+        const item = order.items.find(i => i.k === f.k);
+        return { k: f.k, n: f.n, q: item ? item.q : 0 };
+      });
+      renderEditOrderItems();
+      document.getElementById("editOrderModal").hidden = false;
+    };
+
+    const saveEditOrder = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      const items = editOrderDraft.filter(i => i.q > 0).map(i => ({ k: i.k, n: i.n, q: i.q }));
+      if (!items.length) return showToast("味を1個以上にしてね");
+      order.items = items;
+      order.total = itemsQty(order.items) * (Number(order.price) || state.price);
+      closeEditOrderModal();
+      save();
+      showToast(`G${order.groupId} を修正しました`);
+    };
+
+    const cancelEditingOrder = () => {
+      const order = state.orders.find(o => String(o.id) === String(editingOrderId));
+      if (!order) return closeEditOrderModal();
+      order.s = "canceled";
+      closeEditOrderModal();
+      save();
+      showToast(`G${order.groupId} を取り消しました`);
     };
 
     const checkoutTotalAmount = () => itemsQty(state.cart) * state.price;
@@ -911,30 +1342,30 @@
         closeCheckoutModal();
         return;
       }
-      pushHist();
       const now = Date.now();
       const groupId = state.nextGroupId;
+      const price = state.price;
+      const total = itemsQty(state.cart) * price;
       state.orders.push({
         id: now,
         groupId,
         items: state.cart.map(i => ({ ...i })),
+        price,
+        total,
         s: "pending",
         createdAt: now
       });
       state.nextGroupId += 1;
+      state.lineCount = Math.max(0, state.lineCount - 1);
       state.cart = [];
       closeCheckoutModal();
       save();
       showToast(`G${groupId} をキューに入れました`);
     };
 
-    const updateUndoRedoButtons = () => {
-      document.querySelector('[data-act="undo"]').disabled = history.undo.length === 0;
-      document.querySelector('[data-act="redo"]').disabled = history.redo.length === 0;
-    };
-
     const setActiveTab = tab => {
       document.getElementById("orderTab").hidden = tab !== "order";
+      document.getElementById("lineTab").hidden = tab !== "line";
       document.getElementById("adminTab").hidden = tab !== "admin";
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === tab);
@@ -954,6 +1385,8 @@
 
       const cartQty = itemsQty(state.cart);
       const cartTotal = cartQty * state.price;
+      document.getElementById("lineCount").textContent = state.lineCount;
+      document.querySelector('[data-act="lineMinus"]').disabled = state.lineCount === 0;
 
       document.getElementById("cartBox").innerHTML = FLAVORS.map(f => {
         const item = state.cart.find(i => i.k === f.k);
@@ -980,18 +1413,40 @@
       const next = pending[0];
       const waiting = pending.slice(1);
       const pendingQty = pending.reduce((a, o) => a + itemsQty(o.items), 0);
+      const waitTargets = state.lineCount + pendingQty;
+      const waitMinutes = Math.ceil((state.cottonSeconds * waitTargets) / 60 / 5) * 5;
+      const waitMinutesEl = document.getElementById("lineWaitMinutes").parentElement;
+      waitMinutesEl.classList.remove("wait-blue", "wait-yellow", "wait-orange", "wait-red");
+      waitMinutesEl.classList.add(waitMinutes >= 20 ? "wait-red" : waitMinutes >= 15 ? "wait-orange" : waitMinutes >= 10 ? "wait-yellow" : "wait-blue");
+      document.getElementById("lineWaitMinutes").textContent = waitMinutes;
+      document.getElementById("lineWaitDetail").textContent = `${state.cottonSeconds}秒 × (${state.lineCount}人 + ${pendingQty}個)`;
       document.getElementById("queueWait").textContent = `${pending.length}組 / ${pendingQty}個`;
+      document.getElementById("nextMenuSlot").innerHTML = next
+        ? `<button class="order-menu ghost" data-act="editOrder" data-id="${next.id}" aria-label="G${next.groupId} を修正">&#8942;</button>`
+        : "";
 
       const stats = FLAVORS.map(f => {
         const active = state.orders.filter(o => o.s !== "canceled");
         const sum = active.reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
         const p = state.orders.filter(o => o.s === "pending").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
         const d = state.orders.filter(o => o.s === "done").reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q, 0), 0);
-        return { n: f.n, sum, p, d };
+        const sale = active.reduce((a, o) => a + o.items.filter(i => i.k === f.k).reduce((x, i) => x + i.q * (Number(o.price) || state.price), 0), 0);
+        return { n: f.n, sum, p, d, sale };
       });
       const total = stats.reduce((a, b) => a + b.sum, 0);
+      const totalSale = stats.reduce((a, b) => a + b.sale, 0);
 
-      document.getElementById("nextBox").innerHTML = next ? `
+      const finishUndoHTML = finishUndo ? `
+        <div class="finish-undo">
+          <div class="finish-undo-row">
+            <span>G${finishUndo.groupId}を作りました</span>
+            <button class="ghost" data-act="undoFinish">元に戻す</button>
+          </div>
+          <div class="finish-undo-gauge" aria-hidden="true"></div>
+        </div>
+      ` : "";
+
+      document.getElementById("nextBox").innerHTML = (next ? `
         <div class="next-card" data-act="finish" data-id="${next.id}">
           <div class="next-title">G${next.groupId}</div>
           <div class="next-items">
@@ -1005,7 +1460,7 @@
           <div class="next-items"></div>
           <button class="ok" style="width:100%; padding:10px; font-size:16px;" disabled>このグループを作った！</button>
         </div>
-      `;
+      `) + finishUndoHTML;
 
       const rowHTML = o => `
         <div class="order">
@@ -1014,20 +1469,21 @@
             <div class="order-title">${itemsText(o.items)}</div>
             <div class="order-items">${itemsQty(o.items)}個 / ${timeFmt(o.createdAt)}</div>
           </div>
+          <button class="order-menu ghost" data-act="editOrder" data-id="${o.id}" aria-label="G${o.groupId} を修正">&#8942;</button>
         </div>`;
 
       document.getElementById("queueBox").innerHTML = waiting.map(o => rowHTML(o)).join("");
 
       document.getElementById("priceInput").value = state.price;
+      document.getElementById("cottonSecondsInput").value = state.cottonSeconds;
       const summaryHTML = `
         <table>
           <tr><th>味</th><th>販売</th><th>待ち</th><th>完了</th><th>売上</th></tr>
-          ${stats.map(s => `<tr><td>${s.n}</td><td>${s.sum}</td><td>${s.p}</td><td>${s.d}</td><td>${yen(s.sum * state.price)}</td></tr>`).join("")}
-          <tr><th>合計</th><th>${total}</th><th>${stats.reduce((a,b)=>a+b.p,0)}</th><th>${stats.reduce((a,b)=>a+b.d,0)}</th><th>${yen(total * state.price)}</th></tr>
+          ${stats.map(s => `<tr><td>${s.n}</td><td>${s.sum}</td><td>${s.p}</td><td>${s.d}</td><td>${yen(s.sale)}</td></tr>`).join("")}
+          <tr><th>合計</th><th>${total}</th><th>${stats.reduce((a,b)=>a+b.p,0)}</th><th>${stats.reduce((a,b)=>a+b.d,0)}</th><th>${yen(totalSale)}</th></tr>
         </table>`;
       document.getElementById("summaryTable").innerHTML = summaryHTML;
 
-      updateUndoRedoButtons();
     };
 
     document.body.addEventListener("input", e => {
@@ -1046,6 +1502,7 @@
       if (feedbackButton && !feedbackButton.disabled) {
         if (act === "finalizeCheckout") playCashRegisterSound();
         else if (act === "finish") playGroupCreatedSound();
+        else if (act === "cartMinus" || act === "cancelCheckout" || act === "cancelEditOrder" || act === "backToEditOrder" || act === "lineMinus") playCancelSound();
         else playClickSound();
         if (feedbackButton.dataset.flavor) showFlavorAfterimage(feedbackButton);
         feedbackButton.classList.remove("press-animate");
@@ -1059,8 +1516,32 @@
         closeCheckoutModal();
         return;
       }
+      if (act === "cancelEditOrder") {
+        closeEditOrderModal();
+        return;
+      }
+      if (act === "backToEditOrder") {
+        closeCancelOrderConfirmModal();
+        return;
+      }
       if (act === "finalizeCheckout") {
         finalizeCheckout();
+        return;
+      }
+      if (act === "saveEditOrder") {
+        saveEditOrder();
+        return;
+      }
+      if (act === "undoFinish") {
+        undoLastFinished();
+        return;
+      }
+      if (act === "askCancelOrder") {
+        openCancelOrderConfirmModal();
+        return;
+      }
+      if (act === "confirmCancelOrder") {
+        cancelEditingOrder();
         return;
       }
       if (act === "addTendered") {
@@ -1075,10 +1556,28 @@
 
       if (act === "tab") {
         setActiveTab(btn.dataset.tab);
+      } else if (act === "editOrder") {
+        openEditOrderModal(id);
+      } else if (act === "editOrderPlus") {
+        const item = editOrderDraft.find(i => i.k === k);
+        if (!item) return;
+        item.q += 1;
+        renderEditOrderItems();
+      } else if (act === "editOrderMinus") {
+        const item = editOrderDraft.find(i => i.k === k);
+        if (!item || item.q <= 0) return;
+        item.q -= 1;
+        renderEditOrderItems();
+      } else if (act === "linePlus") {
+        state.lineCount += 1;
+        save();
+      } else if (act === "lineMinus") {
+        if (state.lineCount <= 0) return;
+        state.lineCount -= 1;
+        save();
       } else if (flavor) {
         const f = FLAVORS.find(x => x.k === flavor);
         if (!f) return;
-        pushHist();
         const item = state.cart.find(i => i.k === f.k);
         if (item) item.q += 1;
         else state.cart.push({ k: f.k, n: f.n, q: 1 });
@@ -1087,7 +1586,6 @@
       } else if (act === "cartMinus") {
         const item = state.cart.find(i => i.k === k);
         if (!item) return;
-        pushHist();
         item.q -= 1;
         if (item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
         save();
@@ -1095,13 +1593,16 @@
         openCheckoutModal();
         return;
         if (!state.cart.length) return;
-        pushHist();
         const now = Date.now();
         const groupId = state.nextGroupId;
+        const price = state.price;
+        const total = itemsQty(state.cart) * price;
         state.orders.push({
           id: now,
           groupId,
           items: state.cart.map(i => ({ ...i })),
+          price,
+          total,
           s: "pending",
           createdAt: now
         });
@@ -1112,41 +1613,35 @@
       } else if (act === "finish") {
         const order = state.orders.find(o => String(o.id) === String(id));
         if (!order) return;
-        pushHist();
         order.s = "done";
+        showFinishUndo(order);
         save();
         showToast(`G${order.groupId} を完了！`);
-      } else if (act === "undo" && history.undo.length) {
-        history.redo.push(snap());
-        state = JSON.parse(history.undo.pop());
-        normalizeState();
-        save();
-        showToast("戻しました！");
-      } else if (act === "redo" && history.redo.length) {
-        history.undo.push(snap());
-        state = JSON.parse(history.redo.pop());
-        normalizeState();
-        save();
-        showToast("やり直しました！");
       } else if (act === "savePrice") {
         const price = Number(document.getElementById("priceInput").value);
         if (!Number.isFinite(price) || price < 0) return showToast("単価を確認してね");
-        pushHist();
+        const cottonSeconds = Number(document.getElementById("cottonSecondsInput").value);
+        if (!Number.isFinite(cottonSeconds) || cottonSeconds <= 0) return showToast("秒数を確認してね");
         state.price = price;
+        state.cottonSeconds = cottonSeconds;
         save();
         showToast("単価を保存したよ！");
       } else if (act === "reset" && confirm("全消去するよ？元には戻せないからね！")) {
-        pushHist();
+        if (finishUndoTimer) clearTimeout(finishUndoTimer);
+        finishUndoTimer = null;
+        finishUndo = null;
         state.cart = [];
         state.orders = [];
+        state.lineCount = 0;
         state.nextGroupId = 1;
         save();
         showToast("全消去しました");
       } else if (act === "csv") {
         const rows = ["groupId,orderId,味,数量,状態,受付時刻,売上"];
         state.orders.forEach(o => {
+          const price = Number(o.price) || state.price;
           o.items.forEach(i => {
-            const sale = o.s === "canceled" ? 0 : i.q * state.price;
+            const sale = o.s === "canceled" ? 0 : i.q * price;
             rows.push(`${o.groupId},${o.id},${i.n},${i.q},${o.s},${new Date(o.createdAt).toLocaleString("ja-JP")},${sale}`);
           });
         });
