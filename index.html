@@ -480,6 +480,10 @@
       gap: 6px;
     }
     .checkout-money-buttons button {
+      display: grid;
+      gap: 3px;
+      justify-items: center;
+      align-content: center;
       min-height: 44px;
       padding: 5px;
       font-weight: 1000;
@@ -489,6 +493,12 @@
       width: 100%;
       height: 44px;
       object-fit: contain;
+      pointer-events: none;
+    }
+    .checkout-money-label {
+      font-size: clamp(12px, 1.25vw, 16px);
+      line-height: 1;
+      color: var(--ink);
       pointer-events: none;
     }
     .checkout-change strong {
@@ -739,12 +749,12 @@
           <input type="number" id="checkoutTendered" min="0" step="10" inputmode="numeric" autocomplete="off" />
         </label>
         <div class="checkout-money-buttons" aria-label="money buttons">
-          <button class="ghost" data-act="addTendered" data-amount="10000" aria-label="10000 yen"><img src="img/10000yen.png" alt="10,000" /></button>
-          <button class="ghost" data-act="addTendered" data-amount="5000" aria-label="5000 yen"><img src="img/5000yen.png" alt="5,000" /></button>
-          <button class="ghost" data-act="addTendered" data-amount="1000" aria-label="1000 yen"><img src="img/1000yen.png" alt="1,000" /></button>
-          <button class="ghost" data-act="addTendered" data-amount="500" aria-label="500 yen"><img src="img/500yen.png" alt="500" /></button>
-          <button class="ghost" data-act="addTendered" data-amount="100" aria-label="100 yen"><img src="img/100yen.png" alt="100" /></button>
-          <button class="ghost" data-act="addTendered" data-amount="50" aria-label="50 yen"><img src="img/50yen.png" alt="50" /></button>
+          <button class="ghost" data-act="addTendered" data-amount="10000" aria-label="10000 yen"><img src="img/10000yen.png" alt="10,000" /><span class="checkout-money-label">10,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="5000" aria-label="5000 yen"><img src="img/5000yen.png" alt="5,000" /><span class="checkout-money-label">5,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="1000" aria-label="1000 yen"><img src="img/1000yen.png" alt="1,000" /><span class="checkout-money-label">1,000円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="500" aria-label="500 yen"><img src="img/500yen.png" alt="500" /><span class="checkout-money-label">500円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="100" aria-label="100 yen"><img src="img/100yen.png" alt="100" /><span class="checkout-money-label">100円</span></button>
+          <button class="ghost" data-act="addTendered" data-amount="50" aria-label="50 yen"><img src="img/50yen.png" alt="50" /><span class="checkout-money-label">50円</span></button>
         </div>
         <div class="checkout-change" id="checkoutChangeRow">
           <span>お釣り</span>
