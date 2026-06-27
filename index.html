@@ -64,7 +64,31 @@
       user-select: none;
       white-space: nowrap;
     }
-    button:active { transform: translateY(1px); }
+    button.press-animate {
+      animation: button-press 150ms ease-out;
+    }
+    @keyframes button-press {
+      0% { transform: scale(1); }
+      70% {
+        transform: scale(0.96);
+        box-shadow: inset 0 3px 7px rgba(47,36,48,0.28), 0 1px 2px rgba(47,36,48,0.12);
+        /* filter: brightness(1); */
+      }
+      100% { transform: scale(1); }
+    }
+    .flavor-afterimage {
+      position: fixed;
+      z-index: 200;
+      margin: 0;
+      pointer-events: none;
+      animation: flavor-afterimage-rise 700ms cubic-bezier(0.2, 0.7, 0.25, 1) forwards;
+      will-change: transform, opacity, filter;
+    }
+    @keyframes flavor-afterimage-rise {
+      0% { transform: translateY(0) scale(1); opacity: 0.72; filter: blur(0); }
+      55% { opacity: 0.36; }
+      100% { transform: translateY(-90px) scale(1.04); opacity: 0; filter: blur(5px); }
+    }
     button:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
     .tab-btn.active { color: white; background: var(--accent2); }
 
@@ -121,11 +145,16 @@
       text-shadow: 0 2px 8px rgba(0,0,0,0.25);
       box-shadow: var(--shadow);
     }
+    .flavor-btn .flavor-name { display: block; }
+    .flavor-btn .flavor-name.two-line { line-height: 0.9; }
+    .flavor-btn.bluehawaii { padding-block: 3px; }
+    .flavor-btn.bluehawaii small { margin-top: 2px; }
     .flavor-btn small { display: block; font-size: 11px; margin-top: 6px; opacity: 0.92; }
     .white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; text-shadow: none; }
-    .strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); }
-    .grape { background: linear-gradient(135deg, #7854d8, #b190ff); }
-    .mango { background: linear-gradient(135deg, #ffad1f, #ffdb67); color: #493012; text-shadow: none; }
+    .strawberry { background: linear-gradient(135deg, #ff4f93, #ff9fc6); color: #181018; text-shadow: none; }
+    .bluehawaii { background: linear-gradient(135deg, #1397ff, #72d6ff); color: #101828; text-shadow: none; }
+    .melon { background: linear-gradient(135deg, #36c46f, #a7ee7b); color: #17391f; text-shadow: none; }
+    .lemon { background: linear-gradient(135deg, #ffe54a, #fff8a6); color: #4a3b00; text-shadow: none; }
 
     .list {
       flex: 1 1 auto;
@@ -141,7 +170,7 @@
       gap: 8px;
     }
     .cart-entry {
-      flex: 1 1 auto;
+      flex: 4 1 0;
       min-height: 0;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -154,7 +183,7 @@
       min-height: 0;
       min-width: 0;
       display: grid;
-      grid-template-rows: repeat(4, minmax(0, 1fr));
+      grid-template-rows: repeat(5, minmax(0, 1fr));
       gap: 8px;
       overflow: auto;
       padding-right: 0;
@@ -197,7 +226,20 @@
     }
     .cart-total strong { font-size: clamp(16px, 1.8vw, 22px); }
     #cartSummary { flex: 0 0 auto; }
-    .cart-actions { flex: 0 0 auto; display: grid; grid-template-columns: 1fr; gap: 5px; margin-top: 5px; }
+    .cart-actions {
+      flex: 1 1 0;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .cart-actions button {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      font-size: clamp(18px, 2.2vw, 28px);
+    }
 
     .wait-panel {
       flex: 0 0 auto;
@@ -258,8 +300,9 @@
     }
     .next-item.white { background: linear-gradient(135deg, #ffffff, #e9e4ff); color: #3d3448; }
     .next-item.strawberry { background: linear-gradient(135deg, #ffd9e8, #ff8fbd); color: #641437; }
-    .next-item.grape { background: linear-gradient(135deg, #e6dcff, #a68cff); color: #332064; }
-    .next-item.mango { background: linear-gradient(135deg, #ffe7a1, #ffbd42); color: #493012; }
+    .next-item.bluehawaii { background: linear-gradient(135deg, #d8f3ff, #7fd8ff); color: #063d67; }
+    .next-item.melon { background: linear-gradient(135deg, #dcffd8, #96e974); color: #17391f; }
+    .next-item.lemon { background: linear-gradient(135deg, #fff8b6, #ffe54a); color: #4a3b00; }
     .next-item span:first-child {
       min-width: 0;
       overflow: hidden;
@@ -353,6 +396,71 @@
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(47, 36, 48, 0.42);
+    }
+    .checkout-modal {
+      width: min(420px, 100%);
+      max-height: min(620px, 92svh);
+      overflow: auto;
+      border-radius: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 50px rgba(47, 36, 48, 0.24);
+      padding: 16px;
+    }
+    .checkout-title {
+      font-size: clamp(22px, 2.4vw, 30px);
+      line-height: 1;
+      font-weight: 1000;
+      margin-bottom: 12px;
+    }
+    .checkout-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .checkout-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #fbf7fb;
+      font-size: clamp(17px, 1.8vw, 24px);
+      font-weight: 900;
+    }
+    .checkout-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      padding: 12px 2px 14px;
+      font-weight: 1000;
+      font-size: clamp(18px, 1.9vw, 24px);
+    }
+    .checkout-total strong {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+    }
+    .checkout-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .checkout-actions button {
+      min-height: 56px;
+      font-size: clamp(18px, 1.8vw, 24px);
+    }
+
     @media (max-width: 980px) {
       .order-view { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
       .left-col { grid-row: auto; }
@@ -433,7 +541,16 @@
       .cart-total strong { font-size: 14px; }
       .cart-actions { gap: 3px; margin-top: 3px; }
       .cart-actions button { min-height: 18px; padding: 18px 5px; font-size: 20px; }
-      .next-card { height: clamp(168px, 33.7svh, 218px); padding: 5px; border-radius: 9px; }
+      .next-card { height: clamp(280px, 48svh, 330px); padding: 5px; border-radius: 9px; }
+      .next-items {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: repeat(5, minmax(0, 1fr));
+        grid-auto-rows: 0;
+        align-content: stretch;
+        overflow: hidden;
+      }
+      .next-item { min-height: 0; }
+      .next-item span:last-child { font-size: 2em; }
       .next-card > button.ok { min-height: 20px; padding: 16px 5px !important; font-size: 14px !important; }
       .next-title { font-size: 22px; }
       .next-item { gap: 4px; padding: 3px 4px; border-radius: 6px; font-size: 13px; }
@@ -496,7 +613,7 @@
 </head>
 <body>
   <header>
-    <h1>🍭 綿菓子注文アプリ_0603</h1>
+    <h1>🍭 綿菓子注文アプリ_0627</h1>
     <div class="flex">
       <button class="ghost" data-act="undo">↶ 戻す</button>
       <button class="ghost" data-act="redo">↷ やり直す</button>
@@ -518,7 +635,7 @@
         </div>
         <div id="cartSummary"></div>
         <div class="cart-actions">
-          <button class="ok" data-act="confirmGroup">会計して確定</button>
+          <button class="ok" data-act="confirmGroup">会計</button>
         </div>
       </div>
     </section>
@@ -561,6 +678,21 @@
     </section>
   </main>
 
+  <div class="modal-backdrop" id="checkoutModal" hidden>
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <div class="checkout-title" id="checkoutTitle">会計確認</div>
+      <div class="checkout-list" id="checkoutItems"></div>
+      <div class="checkout-total">
+        <span>合計</span>
+        <strong id="checkoutTotal"></strong>
+      </div>
+      <div class="checkout-actions">
+        <button class="ghost" data-act="cancelCheckout">キャンセル</button>
+        <button class="ok" data-act="finalizeCheckout">確定</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -568,9 +700,11 @@
     const FLAVORS = [
       { k: "white", n: "ホワイト", c: "white" },
       { k: "strawberry", n: "イチゴ", c: "strawberry" },
-      { k: "grape", n: "グレープ", c: "grape" },
-      { k: "mango", n: "マンゴー", c: "mango" }
+      { k: "bluehawaii", n: "ブルーハワイ", c: "bluehawaii" },
+      { k: "melon", n: "メロン", c: "melon" },
+      { k: "lemon", n: "レモン", c: "lemon" }
     ];
+    const FLAVOR_NAMES = new Map(FLAVORS.map(f => [f.k, f.n]));
     const DEFAULT_STATE = { qty: 1, price: 100, nextGroupId: 1, cart: [], orders: [] };
 
     const clone = obj => JSON.parse(JSON.stringify(obj));
@@ -584,6 +718,45 @@
 
     let state = loadState();
     let history = { undo: [], redo: [] };
+    const clickSound = new Audio("sounds/click.mp3");
+    clickSound.preload = "auto";
+    const cashRegisterSound = new Audio("sounds/cash_register.mp3");
+    cashRegisterSound.preload = "auto";
+    const groupCreatedSound = new Audio("sounds/group_created.mp3");
+    groupCreatedSound.preload = "auto";
+
+    const playClickSound = () => {
+      clickSound.currentTime = 0;
+      clickSound.play().catch(() => {});
+    };
+
+    const playCashRegisterSound = () => {
+      cashRegisterSound.currentTime = 0;
+      cashRegisterSound.play().catch(() => {});
+    };
+
+    const playGroupCreatedSound = () => {
+      groupCreatedSound.currentTime = 0;
+      groupCreatedSound.play().catch(() => {});
+    };
+
+    const showFlavorAfterimage = button => {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const rect = button.getBoundingClientRect();
+      const afterimage = button.cloneNode(true);
+      afterimage.classList.remove("press-animate");
+      afterimage.classList.add("flavor-afterimage");
+      afterimage.removeAttribute("data-flavor");
+      afterimage.setAttribute("aria-hidden", "true");
+      Object.assign(afterimage.style, {
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`
+      });
+      document.body.appendChild(afterimage);
+      afterimage.addEventListener("animationend", () => afterimage.remove(), { once: true });
+    };
 
     const normalizeState = () => {
       state.qty = 1;
@@ -593,7 +766,7 @@
       if (!Array.isArray(state.orders)) state.orders = [];
 
       state.cart = state.cart
-        .map(i => ({ k: i.k, n: i.n, q: Number(i.q) || 0 }))
+        .map(i => ({ k: i.k, n: FLAVOR_NAMES.get(i.k), q: Number(i.q) || 0 }))
         .filter(i => i.k && i.n && i.q > 0);
 
       state.orders = state.orders
@@ -623,6 +796,47 @@
       setTimeout(() => t.classList.remove("show"), 1500);
     };
 
+    const closeCheckoutModal = () => {
+      document.getElementById("checkoutModal").hidden = true;
+    };
+
+    const openCheckoutModal = () => {
+      if (!state.cart.length) return;
+      const cartQty = itemsQty(state.cart);
+      const cartTotal = cartQty * state.price;
+
+      document.getElementById("checkoutItems").innerHTML = state.cart.map(item => `
+        <div class="checkout-row">
+          <span>${item.n}</span>
+          <span>${item.q}個</span>
+        </div>
+      `).join("");
+      document.getElementById("checkoutTotal").textContent = yen(cartTotal);
+      document.getElementById("checkoutModal").hidden = false;
+    };
+
+    const finalizeCheckout = () => {
+      if (!state.cart.length) {
+        closeCheckoutModal();
+        return;
+      }
+      pushHist();
+      const now = Date.now();
+      const groupId = state.nextGroupId;
+      state.orders.push({
+        id: now,
+        groupId,
+        items: state.cart.map(i => ({ ...i })),
+        s: "pending",
+        createdAt: now
+      });
+      state.nextGroupId += 1;
+      state.cart = [];
+      closeCheckoutModal();
+      save();
+      showToast(`G${groupId} をキューに入れました`);
+    };
+
     const updateUndoRedoButtons = () => {
       document.querySelector('[data-act="undo"]').disabled = history.undo.length === 0;
       document.querySelector('[data-act="redo"]').disabled = history.redo.length === 0;
@@ -643,7 +857,7 @@
 
       document.getElementById("flavorBox").innerHTML = FLAVORS.map(f =>
         `<button class="flavor-btn ${f.c}" data-flavor="${f.k}">
-          ${f.n}<small>1個追加</small>
+          <span class="flavor-name${f.k === "bluehawaii" ? " two-line" : ""}">${f.k === "bluehawaii" ? "ブルー<br>ハワイ" : f.n}</span><small>1個追加</small>
         </button>`
       ).join("");
 
@@ -725,11 +939,35 @@
       updateUndoRedoButtons();
     };
 
-    document.body.addEventListener("click", e => {
+    document.body.addEventListener("click", async e => {
       const btn = e.target.closest('button, .next-card[data-act="finish"]');
       if (!btn || btn.disabled) return;
 
       const { act, id, qty, flavor, k } = btn.dataset;
+      const feedbackButton = btn.matches("button")
+        ? btn
+        : btn.querySelector('button[data-act="finish"]');
+
+      if (feedbackButton && !feedbackButton.disabled) {
+        if (act === "finalizeCheckout") playCashRegisterSound();
+        else if (act === "finish") playGroupCreatedSound();
+        else playClickSound();
+        if (feedbackButton.dataset.flavor) showFlavorAfterimage(feedbackButton);
+        feedbackButton.classList.remove("press-animate");
+        void feedbackButton.offsetWidth;
+        feedbackButton.classList.add("press-animate");
+        await new Promise(resolve => setTimeout(resolve, 150));
+        feedbackButton.classList.remove("press-animate");
+      }
+
+      if (act === "cancelCheckout") {
+        closeCheckoutModal();
+        return;
+      }
+      if (act === "finalizeCheckout") {
+        finalizeCheckout();
+        return;
+      }
 
       if (act === "tab") {
         setActiveTab(btn.dataset.tab);
@@ -750,6 +988,8 @@
         if (item.q <= 0) state.cart = state.cart.filter(i => i.k !== k);
         save();
       } else if (act === "confirmGroup") {
+        openCheckoutModal();
+        return;
         if (!state.cart.length) return;
         pushHist();
         const now = Date.now();
