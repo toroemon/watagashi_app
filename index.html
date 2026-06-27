@@ -451,6 +451,47 @@
       font-size: clamp(28px, 3vw, 42px);
       line-height: 1;
     }
+    .checkout-payment {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf7fb;
+      font-weight: 900;
+    }
+    .checkout-payment label,
+    .checkout-change {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-size: clamp(17px, 1.7vw, 22px);
+    }
+    .checkout-payment input {
+      width: min(190px, 52%);
+      text-align: right;
+      font-size: 20px;
+    }
+    .checkout-money-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .checkout-money-buttons button {
+      min-height: 44px;
+      padding: 8px 6px;
+      font-size: clamp(15px, 1.5vw, 20px);
+      font-weight: 1000;
+    }
+    .checkout-change strong {
+      font-size: clamp(22px, 2.4vw, 32px);
+      line-height: 1;
+    }
+    .checkout-change.is-short strong {
+      color: var(--danger);
+    }
     .checkout-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -686,6 +727,24 @@
         <span>合計</span>
         <strong id="checkoutTotal"></strong>
       </div>
+      <div class="checkout-payment">
+        <label for="checkoutTendered">
+          <span>お預かり</span>
+          <input type="number" id="checkoutTendered" min="0" step="10" inputmode="numeric" autocomplete="off" />
+        </label>
+        <div class="checkout-money-buttons" aria-label="money buttons">
+          <button class="ghost" data-act="addTendered" data-amount="10000">10,000</button>
+          <button class="ghost" data-act="addTendered" data-amount="5000">5,000</button>
+          <button class="ghost" data-act="addTendered" data-amount="1000">1,000</button>
+          <button class="ghost" data-act="addTendered" data-amount="500">500</button>
+          <button class="ghost" data-act="addTendered" data-amount="100">100</button>
+          <button class="ghost" data-act="addTendered" data-amount="50">50</button>
+        </div>
+        <div class="checkout-change" id="checkoutChangeRow">
+          <span>お釣り</span>
+          <strong id="checkoutChange">0円</strong>
+        </div>
+      </div>
       <div class="checkout-actions">
         <button class="ghost" data-act="cancelCheckout">キャンセル</button>
         <button class="ok" data-act="finalizeCheckout">確定</button>
@@ -800,10 +859,24 @@
       document.getElementById("checkoutModal").hidden = true;
     };
 
+    const checkoutTotalAmount = () => itemsQty(state.cart) * state.price;
+
+    const updateCheckoutChange = () => {
+      const total = checkoutTotalAmount();
+      const tenderedInput = document.getElementById("checkoutTendered");
+      const changeRow = document.getElementById("checkoutChangeRow");
+      const changeText = document.getElementById("checkoutChange");
+      const tenderedValue = Number(tenderedInput.value || 0);
+      const tendered = Math.max(0, Number.isFinite(tenderedValue) ? tenderedValue : 0);
+      const short = tendered < total;
+      changeRow.classList.toggle("is-short", short);
+      changeText.textContent = short ? `不足 ${yen(total - tendered)}` : yen(tendered - total);
+    };
+
     const openCheckoutModal = () => {
       if (!state.cart.length) return;
       const cartQty = itemsQty(state.cart);
-      const cartTotal = cartQty * state.price;
+      const cartTotal = checkoutTotalAmount();
 
       document.getElementById("checkoutItems").innerHTML = state.cart.map(item => `
         <div class="checkout-row">
@@ -812,6 +885,8 @@
         </div>
       `).join("");
       document.getElementById("checkoutTotal").textContent = yen(cartTotal);
+      document.getElementById("checkoutTendered").value = "";
+      updateCheckoutChange();
       document.getElementById("checkoutModal").hidden = false;
     };
 
@@ -939,6 +1014,10 @@
       updateUndoRedoButtons();
     };
 
+    document.body.addEventListener("input", e => {
+      if (e.target.id === "checkoutTendered") updateCheckoutChange();
+    });
+
     document.body.addEventListener("click", async e => {
       const btn = e.target.closest('button, .next-card[data-act="finish"]');
       if (!btn || btn.disabled) return;
@@ -966,6 +1045,15 @@
       }
       if (act === "finalizeCheckout") {
         finalizeCheckout();
+        return;
+      }
+      if (act === "addTendered") {
+        const tenderedInput = document.getElementById("checkoutTendered");
+        const currentValue = Number(tenderedInput.value || 0);
+        const addValue = Number(btn.dataset.amount || 0);
+        const current = Number.isFinite(currentValue) ? currentValue : 0;
+        tenderedInput.value = current + addValue;
+        updateCheckoutChange();
         return;
       }
 
